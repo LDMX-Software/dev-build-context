@@ -329,6 +329,32 @@ RUN mkdir src &&\
     rm -rf src 
 
 ###############################################################################
+# Install HEPMC for use as in interface with GENIE
+#
+###############################################################################
+ENV HEPMC3=3.2.7
+LABEL hepmc3.version="${HEPMC3}"
+RUN mkdir src &&\
+    ${__wget} http://hepmc.web.cern.ch/hepmc/releases/HepMC3-${HEPMC3}.tar.gz |\
+      ${__untar} &&\
+    cmake \
+      -DCMAKE_INSTALL_PREFIX=/usr/local \
+      -DHEPMC3_ENABLE_ROOTIO:BOOL=ON \
+#      -DHEPMC3_ENABLE_PROTOBUFIO:BOOL=ON \
+      -DHEPMC3_ENABLE_TEST:BOOL=OFF \
+      -DHEPMC3_INSTALL_INTERFACES:BOOL=ON \
+      -DHEPMC3_BUILD_STATIC_LIBS:BOOL=ON \
+      -DHEPMC3_BUILD_DOCS:BOOL=OFF \
+      -DHEPMC3_ENABLE_PYTHON:BOOL=ON \
+      -DHEPMC3_PYTHON_VERSIONS=3.10 \
+      -B src/build \
+      -S src \
+    &&\
+    cmake --build src/build --target install -j$NPROC && \
+    rm -rf src
+
+
+###############################################################################
 # GENIE
 #
 # Needed for ... GENIE :)
@@ -369,7 +395,8 @@ SHELL ["/bin/bash", "-c"]
 
 RUN mkdir -p ${GENIE} &&\
     export ENV GENIE_GET_VERSION="$(sed 's,\.,_,g' <<< $GENIE_VERSION )" &&\ 
-    ${__wget} https://github.com/GENIE-MC/Generator/archive/refs/tags/R-${GENIE_GET_VERSION}.tar.gz |\
+#    ${__wget} https://github.com/GENIE-MC/Generator/archive/refs/tags/R-${GENIE_GET_VERSION}.tar.gz |\
+    ${__wget} https://github.com/wesketchum/Generator/tarball/hepmc |\
       ${__untar_to} ${GENIE} &&\
     cd ${GENIE} &&\
     ./configure \
@@ -380,6 +407,9 @@ RUN mkdir -p ${GENIE} &&\
       --enable-pythia8 \
       --with-pythia8-lib=${__prefix}/lib \
       --enable-test \
+      --enable-hepmc3 \
+      --with-hepmc3-lib=/usr/local/lib \
+      --with-hepmc3-inc=/usr/local/include \
     && \
     make -j$NPROC && \
     make -j$NPROC install
