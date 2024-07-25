@@ -332,7 +332,7 @@ RUN mkdir src &&\
 # Install HEPMC for use as in interface with GENIE
 #
 ###############################################################################
-ENV HEPMC3=3.2.7
+ENV HEPMC3=3.3.0
 LABEL hepmc3.version="${HEPMC3}"
 RUN mkdir src &&\
     ${__wget} http://hepmc.web.cern.ch/hepmc/releases/HepMC3-${HEPMC3}.tar.gz |\
@@ -385,10 +385,9 @@ RUN install-ubuntu-packages \
     liblog4cpp5-dev \
     libtool
 
-LABEL genie.version=3.04.00
-ENV GENIE_VERSION=3_04_00
+LABEL genie.version=3.04.02
+ENV GENIE_VERSION=3_04_02
 ENV GENIE=/usr/local/src/GENIE/Generator
-#ENV GENIE_DOT_VERSION="$(sed 's,_,\.,g' <<< $GENIE_VERSION )"
 LABEL genie.version=${GENIE_VERSION}
 
 SHELL ["/bin/bash", "-c"]
@@ -414,12 +413,11 @@ RUN mkdir -p ${GENIE} &&\
     make -j$NPROC && \
     make -j$NPROC install
 
-#Unfortunately ... need to use the master branch of GENIE reweight...
-#ENV GENIE_REWEIGHT_VERSION=1_02_02
+ENV GENIE_REWEIGHT_VERSION=1_02_04
 ENV GENIE_REWEIGHT=/usr/local/src/GENIE/Reweight
 RUN mkdir -p ${GENIE_REWEIGHT} &&\
-    #${__wget} https://github.com/GENIE-MC/Reweight/archive/refs/tags/R-${GENIE_REWEIGHT_VERSION}.tar.gz |\
-    ${__wget} https://github.com/GENIE-MC/Reweight/tarball/master |\
+    ${__wget} https://github.com/GENIE-MC/Reweight/archive/refs/tags/R-${GENIE_REWEIGHT_VERSION}.tar.gz |\
+    #${__wget} https://github.com/GENIE-MC/Reweight/tarball/master |\
     ${__untar_to} ${GENIE_REWEIGHT} &&\
     cd ${GENIE_REWEIGHT} &&\
     make -j$NPROC && \
