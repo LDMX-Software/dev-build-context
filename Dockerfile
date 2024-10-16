@@ -385,17 +385,16 @@ RUN install-ubuntu-packages \
     liblog4cpp5-dev \
     libtool
 
-LABEL genie.version=3.04.02
-ENV GENIE_VERSION=3_04_02
+LABEL genie.version=3.04.00
+ENV GENIE_VERSION=3_04_00-ldmx
 ENV GENIE=/usr/local/src/GENIE/Generator
 LABEL genie.version=${GENIE_VERSION}
 
 SHELL ["/bin/bash", "-c"]
 
 RUN mkdir -p ${GENIE} &&\
-    export ENV GENIE_GET_VERSION="$(sed 's,\.,_,g' <<< $GENIE_VERSION )" &&\ 
-#    ${__wget} https://github.com/GENIE-MC/Generator/archive/refs/tags/R-${GENIE_GET_VERSION}.tar.gz |\
-    ${__wget} https://github.com/wesketchum/Generator/tarball/hepmc |\
+    export ENV GENIE_GET_VERSION="$(sed 's,\.,_,g' <<< $GENIE_VERSION )" &&\
+    ${__wget} https://github.com/wesketchum/Generator/archive/refs/tags/R-${GENIE_GET_VERSION}.tar.gz |\
       ${__untar_to} ${GENIE} &&\
     cd ${GENIE} &&\
     ./configure \
@@ -416,8 +415,9 @@ RUN mkdir -p ${GENIE} &&\
 ENV GENIE_REWEIGHT_VERSION=1_02_04
 ENV GENIE_REWEIGHT=/usr/local/src/GENIE/Reweight
 RUN mkdir -p ${GENIE_REWEIGHT} &&\
-    ${__wget} https://github.com/GENIE-MC/Reweight/archive/refs/tags/R-${GENIE_REWEIGHT_VERSION}.tar.gz |\
-    #${__wget} https://github.com/GENIE-MC/Reweight/tarball/master |\
+    export ENV GENIE_REWEIGHT_GET_VERSION="$(sed 's,\.,_,g' <<< $GENIE_REWEIGHT_VERSION )" &&\ 
+    ${__wget} https://github.com/GENIE-MC/Reweight/archive/refs/tags/R-${GENIE_REWEIGHT_GET_VERSION}.tar.gz |\
+#    ${__wget} https://github.com/wesketchum/Reweight/archive/refs/tags/R-${GENIE_REWEIGHT_GET_VERSION}.tar.gz |\
     ${__untar_to} ${GENIE_REWEIGHT} &&\
     cd ${GENIE_REWEIGHT} &&\
     make -j$NPROC && \
