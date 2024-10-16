@@ -21,8 +21,8 @@ export PYTHONPATH="${LDMX_SW_INSTALL}/python:${LDMX_SW_INSTALL}/lib:${PYTHONPATH
 export PATH="${LDMX_SW_INSTALL}/bin:${PATH}"
 
 #add what we need for GENIE 
-export LD_LIBRARY_PATH="${GENIE}/lib:/usr/local/pythia6:${LD_LIBRARY_PATH}"
-export PATH="${GENIE}/bin:${PATH}"
+export LD_LIBRARY_PATH="${GENIE}/lib:${GENIE_REWEIGHT}/lib:/usr/local/pythia6:${LD_LIBRARY_PATH}"
+export PATH="${GENIE}/bin:${GENIE_REWEIGHT}/bin:${PATH}"
 
 # Developer option: If a custom geant4 install is to be used, source the
 # environment script from that install
