@@ -193,7 +193,7 @@ RUN install-ubuntu-packages \
     srm-ifce-dev \
     libgsl-dev # Necessary for GENIE
 
-ENV ROOT_VERSION="6.32.08"
+ENV ROOT_VERSION="6.34.02"
 LABEL root.version=${ROOT_VERSION}
 RUN mkdir src &&\
     ${__wget} https://root.cern/download/root_v${ROOT_VERSION}.source.tar.gz |\
@@ -210,7 +210,7 @@ RUN mkdir src &&\
       -Dopengl=ON \
       -Dpyroot=ON \
       -Dxrootd=OFF \
-      -Dmathmore=ON \   
+      -Dmathmore=ON \
       -B build \
       -S src \
     && cmake --build build --target install -j$NPROC &&\
@@ -264,6 +264,7 @@ ENV G4ABLADATA="${G4DATADIR}/G4ABLA3.0"
 ENV G4INCLDATA="${G4DATADIR}/G4INCL1.0"
 ENV G4ENSDFSTATEDATA="${G4DATADIR}/G4ENSDFSTATE1.2.3"
 ENV G4NEUTRONXSDATA="${G4DATADIR}/G4NEUTRONXS1.4"
+
 ################################################################################
 # Install Eigen headers into container
 #
@@ -286,81 +287,6 @@ RUN mkdir src &&\
         -j$NPROC \
     &&\
     rm -rf src 
-
-
-###############################################################################
-# LHAPDF
-#
-# Needed for GENIE
-#
-# - We disable the python subpackage because it is based on Python2 whose
-#   executable has been removed from Ubuntu 22.04.
-###############################################################################
-ENV LHAPDF_VERSION="6.5.3"
-LABEL lhapdf.version=${LHAPDF_VERSION}
-RUN mkdir src &&\
-    ${__wget} https://lhapdf.hepforge.org/downloads/?f=LHAPDF-${LHAPDF_VERSION}.tar.gz |\
-      ${__untar} &&\
-    cd src &&\
-    ./configure --disable-python --prefix=${__prefix} &&\
-    make -j$NPROC install &&\
-    cd ../ &&\
-    rm -rf src
-
-###############################################################################
-# GENIE
-#
-# Needed for ... GENIE :)
-#
-# - GENIE looks in ${ROOTSYS}/lib for various ROOT libraries it depends on.
-#   This is annoying because root installs its libs to ${ROOTSYS}/lib/root
-#   when the gnuinstall parameter is ON. We fixed this by forcing ROOT to
-#   install its libs to ${ROOTSYS}/lib even with gnuinstall ON.
-# - liblog4cpp5-dev from the Ubuntu 22.04 repos seems to be functional
-# - GENIE's binaries link to pythia6 at runtime so we need to add the pythia6
-#   library directory into the linker cache
-# - GENIE reads its configuration from files written into its source tree
-#   (and not installed), so we need to keep its source tree around
-#
-# Some errors from the build configuration
-# - The 'quota: not found' error can be ignored. It is just saving a snapshot
-#   of the build environment.
-# - The 'cant exec git' error is resolved within the perl script which
-#   deduces the version from the files in the .git directory if git is
-#   not installed.
-###############################################################################
-
-# See https://github.com/LDMX-Software/docker/pull/48
-#
-# Note that libgsl-dev needs to be available already when building ROOT to build
-# GENIE
-RUN install-ubuntu-packages \
-    liblog4cpp5-dev \
-    libtool
-
-
-ENV GENIE_VERSION=3.02.00
-#ENV GENIE_REWEIGHT_VERSION=1_02_00
-ENV GENIE=/usr/local/src/GENIE/Generator
-#ENV GENIE_DOT_VERSION="$(sed 's,_,\.,g' <<< $GENIE_VERSION )"
-LABEL genie.version=${GENIE_VERSION}
-
-RUN mkdir -p ${GENIE} &&\
-    export ENV GENIE_GET_VERSION="$(echo ${GENVIE_VERSION} | sed 's,\.,_,g')" &&\ 
-    ${__wget} https://github.com/GENIE-MC/Generator/archive/refs/tags/R-${GENIE_GET_VERSION}.tar.gz |\
-      ${__untar_to} ${GENIE} &&\
-    cd ${GENIE} &&\
-    ./configure \
-      --enable-lhapdf6 \
-      --disable-lhapdf5 \
-      --enable-gfortran \
-      --with-gfortran-lib=/usr/x86_64-linux-gnu/ \
-      --disable-pythia8 \
-      --with-pythia6-lib=${__prefix}/pythia6 \
-      --enable-test \
-    && \
-    make -j$NPROC && \
-    make -j$NPROC install
 
 
 ###############################################################################
