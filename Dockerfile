@@ -1,7 +1,6 @@
-
-FROM ubuntu:22.04
-LABEL ubuntu.version="22.04"
-MAINTAINER Tom Eichlersmith <eichl008@umn.edu>
+FROM ubuntu:24.04
+LABEL maintainer="Tom Eichlersmith <eichl008@umn.edu>, Tamas Almos Vami <Tamas.Almos.Vami@cern.ch>"
+LABEL ubuntu.version="24.04"
 
 ARG NPROC=1
 
@@ -50,7 +49,10 @@ RUN install-ubuntu-packages \
     sudo \
     time \
     util-linux \
-    zsh
+    zsh \
+    libx11-dev \
+    libxmu-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Basic python support, necessary for the build steps.
 #
@@ -68,10 +70,10 @@ RUN install-ubuntu-packages \
 #
 #   Adapted from acts-project/machines
 ###############################################################################
-ENV __wget wget -q -O -
+ENV __wget="wget -q -O -"
 ENV __untar_to="tar -xz --strip-components=1 --directory"
 ENV __untar="${__untar_to} src"
-ENV __prefix /usr/local
+ENV __prefix="/usr/local"
 
 # this directory is where folks should "install" code compiled with the container
 #    i.e. folks should mount a local install directory to /externals so that the
@@ -86,9 +88,8 @@ ENV CMAKE_PREFIX_PATH="${EXTERNAL_INSTALL_DIR}:${__prefix}"
 # Xerces-C 
 #   Used by Geant4 to parse GDML
 ################################################################################
-ENV XERCESC_VERSION="3.2.4"
+ENV XERCESC_VERSION="3.3.0"
 LABEL xercesc.version=${XERCESC_VERSION}
-#LABEL xercesc.version="3.2.4"
 RUN mkdir src &&\
     ${__wget} http://archive.apache.org/dist/xerces/c/3/sources/xerces-c-${XERCESC_VERSION}.tar.gz |\
       ${__untar} &&\
@@ -96,7 +97,6 @@ RUN mkdir src &&\
     cmake --build src/build --target install -j$NPROC &&\
     rm -rf src
 
-SHELL ["/bin/sh", "-c"] 
 ###############################################################################
 # LHAPDF
 #
@@ -166,7 +166,6 @@ RUN install-ubuntu-packages \
     libjpeg-dev \
     liblz4-dev \
     liblzma-dev \
-    libpcre++-dev \
     libpng-dev \
     libx11-dev \
     libxext-dev \
@@ -179,14 +178,14 @@ RUN install-ubuntu-packages \
     srm-ifce-dev \
     libgsl-dev # Necessary for GENIE
 
-ENV ROOT_VERSION="6.22.08"
+ENV ROOT_VERSION="6.34.02"
 LABEL root.version=${ROOT_VERSION}
 RUN mkdir src &&\
     ${__wget} https://root.cern/download/root_v${ROOT_VERSION}.source.tar.gz |\
      ${__untar} &&\
     cmake \
       -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_CXX_STANDARD=17 \
+      -DCMAKE_CXX_STANDARD=20 \
       -DCMAKE_INSTALL_PREFIX=${__prefix} \
       -DCMAKE_INSTALL_LIBDIR=lib \
       -Dgnuinstall=ON \
@@ -206,8 +205,6 @@ RUN mkdir src &&\
     ldconfig
 ENV ROOTSYS=${__prefix}
 ENV PYTHONPATH=${ROOTSYS}/lib:${PYTHONPATH}
-ENV JUPYTER_PATH=${ROOTSYS}/etc/notebook:${JUPYTER_PATH}
-ENV JUPYTER_CONFIG_DIR=${ROOTSYS}/etc/notebook:${JUPYTER_CONFIG_DIR}
 ENV CLING_STANDARD_PCH=none
 
 ###############################################################################
@@ -254,6 +251,7 @@ ENV G4ABLADATA="${G4DATADIR}/G4ABLA3.0"
 ENV G4INCLDATA="${G4DATADIR}/G4INCL1.0"
 ENV G4ENSDFSTATEDATA="${G4DATADIR}/G4ENSDFSTATE1.2.3"
 ENV G4NEUTRONXSDATA="${G4DATADIR}/G4NEUTRONXS1.4"
+
 ################################################################################
 # Install Eigen headers into container
 #
@@ -374,8 +372,6 @@ RUN mkdir -p ${GENIE_REWEIGHT} &&\
     make -j$NPROC && \
     make -j$NPROC install
 
-SHELL ["/bin/sh", "-c"]
-
 ###############################################################################
 # Catch2
 ###############################################################################
@@ -448,7 +444,7 @@ RUN ldconfig -v
 # Extra python packages for analysis
 ###############################################################################
 COPY ./python_packages.txt /etc/python_packages.txt
-RUN python3 -m pip install --no-cache-dir --requirement /etc/python_packages.txt
+RUN python3 -m pip install --no-cache-dir --break-system-packages --requirement /etc/python_packages.txt
 
 # Dependencies for LDMX-sw and/or the container environment
 RUN install-ubuntu-packages \
