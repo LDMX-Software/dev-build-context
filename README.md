@@ -1,4 +1,5 @@
-# Development Container for ldmx-sw
+# Development Image Build Context
+The build context for the `ldmx/dev` images used for developing and running ldmx-sw.
 
 <p align="center">
     <a href="http://perso.crans.org/besson/LICENSE.html" alt="GPLv3 license">
