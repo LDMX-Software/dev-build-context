@@ -211,7 +211,7 @@ RUN mkdir src &&\
       -Dpyroot=ON \
       -Dxrootd=OFF \
       -Dmathmore=ON \
-      -Dgeom=ON \ # TYPO on official web page, this is correct
+      -Dgeom=ON \
       -B build \
       -S src \
     && cmake --build build --target install -j$NPROC &&\
