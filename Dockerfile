@@ -1,7 +1,6 @@
-
-FROM ubuntu:22.04
-LABEL ubuntu.version="22.04"
-MAINTAINER Tom Eichlersmith <eichl008@umn.edu>
+FROM ubuntu:24.04
+LABEL maintainer="Tom Eichlersmith <eichl008@umn.edu>, Tamas Almos Vami <Tamas.Almos.Vami@cern.ch>"
+LABEL ubuntu.version="24.04"
 
 ARG NPROC=1
 
@@ -50,7 +49,10 @@ RUN install-ubuntu-packages \
     sudo \
     time \
     util-linux \
-    zsh
+    zsh \
+    libx11-dev \
+    libxmu-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Basic python support, necessary for the build steps.
 #
@@ -68,10 +70,10 @@ RUN install-ubuntu-packages \
 #
 #   Adapted from acts-project/machines
 ###############################################################################
-ENV __wget wget -q -O -
+ENV __wget="wget -q -O -"
 ENV __untar_to="tar -xz --strip-components=1 --directory"
 ENV __untar="${__untar_to} src"
-ENV __prefix /usr/local
+ENV __prefix="/usr/local"
 
 # this directory is where folks should "install" code compiled with the container
 #    i.e. folks should mount a local install directory to /externals so that the
@@ -86,9 +88,8 @@ ENV CMAKE_PREFIX_PATH="${EXTERNAL_INSTALL_DIR}:${__prefix}"
 # Xerces-C 
 #   Used by Geant4 to parse GDML
 ################################################################################
-ENV XERCESC_VERSION="3.2.4"
+ENV XERCESC_VERSION="3.3.0"
 LABEL xercesc.version=${XERCESC_VERSION}
-#LABEL xercesc.version="3.2.4"
 RUN mkdir src &&\
     ${__wget} http://archive.apache.org/dist/xerces/c/3/sources/xerces-c-${XERCESC_VERSION}.tar.gz |\
       ${__untar} &&\
@@ -121,13 +122,12 @@ LABEL pythia.version=${PYTHIA_VERSION}
 #"6.428"
 # Pythia uses an un-dotted version file naming convention. To deal with that
 # we need some string manipulation and exports that work best with bash 
-SHELL ["/bin/bash", "-c"] 
 #ENV PYTHIA_MAJOR_VERSION=$(awk '{print int($1) }' <<< ${PYTHIA_VERSION} ) 
 #    export PYTHIA_MAJOR_VERSION=$(awk '{print int($1) }' <<< ${PYTHIA_VERSION} )  &&\
 
 RUN mkdir src && \
-    export PYTHIA_VERSION_INTEGER=$(awk '{print $1*1000}' <<< ${PYTHIA_VERSION} )  &&\
-    export PREVIOUS_PYTHIA_VERSION_INTEGER=$(awk '{print $1*1000}' <<< ${PREVIOUS_PYTHIA_VERSION} )  &&\
+    export PYTHIA_VERSION_INTEGER=$(echo ${PYTHIA_VERSION} | awk '{print $1*1000}')  &&\
+    export PREVIOUS_PYTHIA_VERSION_INTEGER=$(echo ${PYTHIA_VERSION} | awk '{print $1*1000}')  &&\
     ${__wget} https://root.cern.ch/download/pythia${PYTHIA_MAJOR_VERSION}.tar.gz | ${__untar} &&\
     wget --no-check-certificate https://pythia.org/download/pythia${PYTHIA_MAJOR_VERSION}/pythia${PYTHIA_VERSION_INTEGER}.f &&\
     mv pythia${PYTHIA_VERSION_INTEGER}.f src/pythia${PYTHIA_VERSION_INTEGER}.f && rm -rf src/pythia${PREVIOUS_PYTHIA_VERSION_INTEGER}.f &&\
@@ -145,7 +145,6 @@ RUN mkdir src && \
     cd ../ && rm -rf src &&\
     echo "${__prefix}/pythia${PYTHIA_MAJOR_VERSION}/" > /etc/ld.so.conf.d/pythia${PYTHIA_MAJOR_VERSION}.conf 
 
-SHELL ["/bin/sh", "-c"] 
 ###############################################################################
 # CERN's ROOT
 #  Needed for GENIE and serialization within the Framework
@@ -182,7 +181,6 @@ RUN install-ubuntu-packages \
     libjpeg-dev \
     liblz4-dev \
     liblzma-dev \
-    libpcre++-dev \
     libpng-dev \
     libx11-dev \
     libxext-dev \
@@ -195,14 +193,14 @@ RUN install-ubuntu-packages \
     srm-ifce-dev \
     libgsl-dev # Necessary for GENIE
 
-ENV ROOT_VERSION="6.22.08"
+ENV ROOT_VERSION="6.34.04"
 LABEL root.version=${ROOT_VERSION}
 RUN mkdir src &&\
     ${__wget} https://root.cern/download/root_v${ROOT_VERSION}.source.tar.gz |\
      ${__untar} &&\
     cmake \
       -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_CXX_STANDARD=17 \
+      -DCMAKE_CXX_STANDARD=20 \
       -DCMAKE_INSTALL_PREFIX=${__prefix} \
       -DCMAKE_INSTALL_LIBDIR=lib \
       -Dgnuinstall=ON \
@@ -212,10 +210,8 @@ RUN mkdir src &&\
       -Dopengl=ON \
       -Dpyroot=ON \
       -Dxrootd=OFF \
-      -Dgsl_shared=ON \ 
-      -Dmathmore=ON \   
-      -Dpythia6=ON \    
-      -DPYTHIA6_LIBRARY=${__prefix}/pythia6/libPythia6.so \
+      -Dmathmore=ON \
+      -Dgeom=ON \
       -B build \
       -S src \
     && cmake --build build --target install -j$NPROC &&\
@@ -223,8 +219,6 @@ RUN mkdir src &&\
     ldconfig
 ENV ROOTSYS=${__prefix}
 ENV PYTHONPATH=${ROOTSYS}/lib:${PYTHONPATH}
-ENV JUPYTER_PATH=${ROOTSYS}/etc/notebook:${JUPYTER_PATH}
-ENV JUPYTER_CONFIG_DIR=${ROOTSYS}/etc/notebook:${JUPYTER_CONFIG_DIR}
 ENV CLING_STANDARD_PCH=none
 
 ###############################################################################
@@ -271,6 +265,7 @@ ENV G4ABLADATA="${G4DATADIR}/G4ABLA3.0"
 ENV G4INCLDATA="${G4DATADIR}/G4INCL1.0"
 ENV G4ENSDFSTATEDATA="${G4DATADIR}/G4ENSDFSTATE1.2.3"
 ENV G4NEUTRONXSDATA="${G4DATADIR}/G4NEUTRONXS1.4"
+
 ################################################################################
 # Install Eigen headers into container
 #
@@ -294,83 +289,6 @@ RUN mkdir src &&\
     &&\
     rm -rf src 
 
-###############################################################################
-# LHAPDF
-#
-# Needed for GENIE
-#
-# - We disable the python subpackage because it is based on Python2 whose
-#   executable has been removed from Ubuntu 22.04.
-###############################################################################
-ENV LHAPDF_VERSION="6.5.3"
-LABEL lhapdf.version=${LHAPDF_VERSION}
-RUN mkdir src &&\
-    ${__wget} https://lhapdf.hepforge.org/downloads/?f=LHAPDF-${LHAPDF_VERSION}.tar.gz |\
-      ${__untar} &&\
-    cd src &&\
-    ./configure --disable-python --prefix=${__prefix} &&\
-    make -j$NPROC install &&\
-    cd ../ &&\
-    rm -rf src
-
-###############################################################################
-# GENIE
-#
-# Needed for ... GENIE :)
-#
-# - GENIE looks in ${ROOTSYS}/lib for various ROOT libraries it depends on.
-#   This is annoying because root installs its libs to ${ROOTSYS}/lib/root
-#   when the gnuinstall parameter is ON. We fixed this by forcing ROOT to
-#   install its libs to ${ROOTSYS}/lib even with gnuinstall ON.
-# - liblog4cpp5-dev from the Ubuntu 22.04 repos seems to be functional
-# - GENIE's binaries link to pythia6 at runtime so we need to add the pythia6
-#   library directory into the linker cache
-# - GENIE reads its configuration from files written into its source tree
-#   (and not installed), so we need to keep its source tree around
-#
-# Some errors from the build configuration
-# - The 'quota: not found' error can be ignored. It is just saving a snapshot
-#   of the build environment.
-# - The 'cant exec git' error is resolved within the perl script which
-#   deduces the version from the files in the .git directory if git is
-#   not installed.
-###############################################################################
-
-# See https://github.com/LDMX-Software/docker/pull/48
-#
-# Note that libgsl-dev needs to be available already when building ROOT to build
-# GENIE
-RUN install-ubuntu-packages \
-    liblog4cpp5-dev \
-    libtool
-
-
-ENV GENIE_VERSION=3.02.00
-#ENV GENIE_REWEIGHT_VERSION=1_02_00
-ENV GENIE=/usr/local/src/GENIE/Generator
-#ENV GENIE_DOT_VERSION="$(sed 's,_,\.,g' <<< $GENIE_VERSION )"
-LABEL genie.version=${GENIE_VERSION}
-
-SHELL ["/bin/bash", "-c"]
-
-RUN mkdir -p ${GENIE} &&\
-    export ENV GENIE_GET_VERSION="$(sed 's,\.,_,g' <<< $GENIE_VERSION )" &&\ 
-    ${__wget} https://github.com/GENIE-MC/Generator/archive/refs/tags/R-${GENIE_GET_VERSION}.tar.gz |\
-      ${__untar_to} ${GENIE} &&\
-    cd ${GENIE} &&\
-    ./configure \
-      --enable-lhapdf6 \
-      --disable-lhapdf5 \
-      --enable-gfortran \
-      --with-gfortran-lib=/usr/x86_64-linux-gnu/ \
-      --disable-pythia8 \
-      --with-pythia6-lib=${__prefix}/pythia6 \
-      --enable-test \
-    && \
-    make -j$NPROC && \
-    make -j$NPROC install
-
-SHELL ["/bin/sh", "-c"]
 
 ###############################################################################
 # Catch2
@@ -444,7 +362,7 @@ RUN ldconfig -v
 # Extra python packages for analysis
 ###############################################################################
 COPY ./python_packages.txt /etc/python_packages.txt
-RUN python3 -m pip install --no-cache-dir --requirement /etc/python_packages.txt
+RUN python3 -m pip install --no-cache-dir --break-system-packages --requirement /etc/python_packages.txt
 
 # Dependencies for LDMX-sw and/or the container environment
 RUN install-ubuntu-packages \
