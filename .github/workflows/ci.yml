@@ -123,14 +123,25 @@ jobs:
         name: Inspect image
         run: |
           docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
+
+  list-ldmx-sw-to-test:
+    name: List ldmx-sw Versions to Test
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{steps.read_json.outputs.matrix}}
+    steps:
+      - uses: actions/checkout@v4
+      - id: read_json
+        run: echo "matrix=$(jq -c . ci/ldmx-sw-to-test.json)" >> $GITHUB_OUTPUT
           
   test:
-    needs: merge
+    needs:
+      - list-ldmx-sw-to-test
+      - merge
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        ldmx_sw_branch: [ trunk, v3.0.0, v3.0.2, v3.1.13, v3.2.4, v3.2.12, v3.3.0, v3.4.0, v4.0.0 ]
+      matrix: ${{fromJSON(needs.list-ldmx-sw-to-test.outputs.matrix)}}
     defaults:
       run:
         shell: bash
@@ -155,49 +166,6 @@ jobs:
           type=ref,event=pr
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
-    -
-      name: Pull down ldmx-sw for testing
-      uses: actions/checkout@v4
-      with:
-        repository: LDMX-Software/ldmx-sw
-        submodules: recursive
-        path: ldmx-sw
-        ref: ${{ matrix.ldmx_sw_branch }}
-        fetch-depth: 0
     - 
       name: Test the Image
-      run: |
-          echo "::group::Init Environment"
-          # extract a single tag to run tests with
-          tag=$(jq -r .tags[0] <<<"${DOCKER_METADATA_OUTPUT_JSON}")
-          export LDMX_BASE=$(pwd)
-          export _docker_parameters="-i -e LDMX_BASE -v $LDMX_BASE:$LDMX_BASE ${tag}"
-          mkdir ldmx-sw/build
-          interop_patches=".github/interop/${{ matrix.ldmx_sw_branch }}" 
-          echo "::endgroup::"
-          if [ -d ${interop_patches} ]; then
-            echo "::group::Found ldmx-sw patches for ${{ matrix.ldmx_sw_branch }}"
-            for patch in ${interop_patches}/*; do
-              echo "running ${patch}"
-              ./${patch}
-            done
-            echo "::endgroup::"
-          else
-            echo "::group::No patches for ${{ matrix.ldmx_sw_branch }}"
-            echo "::endgroup::"
-          fi
-          echo "::group::Build ldmx-sw"
-          docker run $_docker_parameters $(pwd)/ldmx-sw/build 'cmake .. && make install'
-          echo "::endgroup::"
-          echo "::group::Run python test script"
-          docker run $_docker_parameters $(pwd) python3 test.py
-          echo "::endgroup::"
-          if [ ! -d ${interop_patches} ]; then
-            echo "::group::ldmx-sw test program"
-            docker run $_docker_parameters $(pwd)/ldmx-sw/build ctest --verbose
-            echo "::endgroup::"
-            echo "::group::run a basic inclusive sim"
-            docker run $_docker_parameters $(pwd) \
-              'LDMX_RUN_NUMBER=1 LDMX_NUM_EVENTS=10 fire ldmx-sw/.github/validation_samples/inclusive/config.py'
-            echo "::endgroup::"
-          fi
+      run: ./ci/test-ldmx-sw $(jq -r .tags[0] <<< "${DOCKER_METADATA_OUTPUT_JSON}") ${{ matrix.ldmx_sw }}

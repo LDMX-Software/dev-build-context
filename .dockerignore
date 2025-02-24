@@ -9,3 +9,7 @@ derivatives/**
 
 # ignore documentation
 docs/**
+
+# ignore CI scripts
+ci/**
+.github/**
