@@ -191,11 +191,11 @@ RUN mkdir src &&\
       -Dgnuinstall=ON \
       -Dgminimal=ON \
       -Dasimage=ON \
+      -Dgeom=ON \
       -Dgdml=ON \
       -Dopengl=ON \
       -Dpyroot=ON \
       -Dxrootd=OFF \
-      -Dgsl_shared=ON \ 
       -Dmathmore=ON \   
       -Dpythia8=ON \    
       -B build \
