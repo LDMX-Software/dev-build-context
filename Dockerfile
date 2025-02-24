@@ -105,9 +105,9 @@ RUN mkdir src &&\
 # - We disable the python subpackage because it is based on Python2 whose
 #   executable has been removed from Ubuntu 22.04.
 ###############################################################################
-LABEL lhapdf.version="6.5.4"
+LABEL lhapdf.version="6.5.5"
 RUN mkdir src &&\
-    ${__wget} https://lhapdf.hepforge.org/downloads/?f=LHAPDF-6.5.4.tar.gz |\
+    ${__wget} https://lhapdf.hepforge.org/downloads/?f=LHAPDF-6.5.5.tar.gz |\
       ${__untar} &&\
     cd src &&\
     ./configure --disable-python --prefix=${__prefix} &&\
@@ -121,9 +121,9 @@ RUN mkdir src &&\
 RUN install-ubuntu-packages \
     rsync
 
-LABEL pythia.version="8.310"
+LABEL pythia.version="8.313"
 RUN mkdir src && \
-    ${__wget} https://pythia.org/download/pythia83/pythia8310.tgz | ${__untar} &&\
+    ${__wget} https://pythia.org/download/pythia83/pythia8313.tgz | ${__untar} &&\
     cd src &&\
     ./configure --with-lhapdf6 --prefix=${__prefix} &&\
     make -j$NPROC install &&\
@@ -341,8 +341,7 @@ SHELL ["/bin/bash", "-c"]
 
 RUN mkdir -p ${GENIE} &&\
     #export ENV GENIE_GET_VERSION="$(sed 's,\.,_,g' <<< $GENIE_VERSION )" &&\
-    #${__wget} https://github.com/wesketchum/Generator/archive/refs/tags/R-${GENIE_GET_VERSION}.tar.gz |\
-    ${__wget} https://github.com/wesketchum/Generator/archive/hepmc_update.tar.gz |\
+    ${__wget} https://github.com/wesketchum/Generator/archive/refs/tags/R-${GENIE_VERSION}.tar.gz |\
       ${__untar_to} ${GENIE} &&\
     cd ${GENIE} &&\
     ./configure \
@@ -366,7 +365,6 @@ ENV GENIE_REWEIGHT=/usr/local/src/GENIE/Reweight
 RUN mkdir -p ${GENIE_REWEIGHT} &&\
     #export ENV GENIE_REWEIGHT_GET_VERSION="$(sed 's,\.,_,g' <<< $GENIE_REWEIGHT_VERSION )" &&\ 
     ${__wget} https://github.com/GENIE-MC/Reweight/archive/refs/tags/R-${GENIE_REWEIGHT_VERSION}.tar.gz |\
-#    ${__wget} https://github.com/wesketchum/Reweight/archive/refs/tags/R-${GENIE_REWEIGHT_VERSION}.tar.gz |\
     ${__untar_to} ${GENIE_REWEIGHT} &&\
     cd ${GENIE_REWEIGHT} &&\
     make -j$NPROC && \
