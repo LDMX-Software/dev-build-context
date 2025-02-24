@@ -178,7 +178,7 @@ RUN install-ubuntu-packages \
     srm-ifce-dev \
     libgsl-dev # Necessary for GENIE
 
-ENV ROOT_VERSION="6.34.02"
+ENV ROOT_VERSION="6.34.04"
 LABEL root.version=${ROOT_VERSION}
 RUN mkdir src &&\
     ${__wget} https://root.cern/download/root_v${ROOT_VERSION}.source.tar.gz |\
