@@ -1,0 +1,35 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5c08246c..29b9dcab 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -126,7 +126,7 @@ endif()
+ 
+ # Build all test.  The test are assumed to reside inside of the directory 
+ # "test" within each module.  The main
+-build_test()
++#build_test()
+ 
+ # The EventDisplay is stand-a-lone and _needs_ to be after everything else
+ # so that it can clear the cache variables and construct its own dictionary.
+Submodule cmake contains modified content
+diff --git a/cmake/FindONNXRuntime.cmake b/cmake/FindONNXRuntime.cmake
+index 348e349..3df0cb6 100644
+--- a/cmake/FindONNXRuntime.cmake
++++ b/cmake/FindONNXRuntime.cmake
+@@ -65,11 +65,11 @@ macro(download_onnxruntime version destination)
+ endmacro()
+ 
+ if(NOT TARGET ONNXRuntime::Interface)
+-  find_path(
+-    onnxruntime_include_dir
+-    NAMES onnxruntime_cxx_api.h
+-    PATHS ${ONNXRuntime_INCLUDE_DIRS}
+-    PATH_SUFFIXES onnxruntime)
++#  find_path(
++#    onnxruntime_include_dir
++#    NAMES onnxruntime_cxx_api.h
++#    PATHS ${ONNXRuntime_INCLUDE_DIRS}
++#    PATH_SUFFIXES onnxruntime)
+ 
+   # If onnxruntime isn't found, download it.
+   if(NOT onnxruntime_include_dir)
