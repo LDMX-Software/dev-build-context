@@ -21,14 +21,16 @@ env:
 
 jobs:
   build:
-    runs-on: self-hosted
     timeout-minutes: 43200
     strategy:
       fail-fast: false
       matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
+        include:
+        - platform: linux/amd64
+          os: self-hosted
+        - platform: linux/amd64
+          os: unbuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
       -
         name: Checkout
