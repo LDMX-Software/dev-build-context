@@ -75,15 +75,6 @@ ENV __untar_to="tar -xz --strip-components=1 --directory"
 ENV __untar="${__untar_to} src"
 ENV __prefix="/usr/local"
 
-# this directory is where folks should "install" code compiled with the container
-#    i.e. folks should mount a local install directory to /externals so that the
-#    container can see those files and those files can be found from these env vars
-ENV EXTERNAL_INSTALL_DIR=/externals
-ENV PATH="${EXTERNAL_INSTALL_DIR}/bin:${PATH}"
-ENV LD_LIBRARY_PATH="${EXTERNAL_INSTALL_DIR}/lib"
-ENV PYTHONPATH="${EXTERNAL_INSTALL_DIR}/lib:${EXTERNAL_INSTALL_DIR}/python:${EXTERNAL_INSTALL_DIR}/lib/python"
-ENV CMAKE_PREFIX_PATH="${EXTERNAL_INSTALL_DIR}:${__prefix}" 
-
 ################################################################################
 # Xerces-C 
 #   Used by Geant4 to parse GDML
@@ -311,8 +302,6 @@ RUN mkdir src &&\
 #   when the gnuinstall parameter is ON. We fixed this by forcing ROOT to
 #   install its libs to ${ROOTSYS}/lib even with gnuinstall ON.
 # - liblog4cpp5-dev from the Ubuntu 22.04 repos seems to be functional
-# - GENIE's binaries link to pythia6 at runtime so we need to add the pythia6
-#   library directory into the linker cache
 # - GENIE reads its configuration from files written into its source tree
 #   (and not installed), so we need to keep its source tree around
 #
@@ -326,8 +315,8 @@ RUN mkdir src &&\
 
 # See https://github.com/LDMX-Software/docker/pull/48
 #
-# Note that libgsl-dev needs to be available already when building ROOT to build
-# GENIE
+# Note that libgsl-dev needs to be available already when building ROOT
+# so that the MathMore target can be build which is used by GENIE
 RUN install-ubuntu-packages \
     liblog4cpp5-dev \
     libtool
@@ -361,7 +350,7 @@ RUN mkdir -p ${GENIE} &&\
 ENV GENIE_REWEIGHT_VERSION=1_04_00
 ENV GENIE_REWEIGHT=/usr/local/src/GENIE/Reweight
 RUN mkdir -p ${GENIE_REWEIGHT} &&\
-    #export ENV GENIE_REWEIGHT_GET_VERSION="$(sed 's,\.,_,g' <<< $GENIE_REWEIGHT_VERSION )" &&\ 
+    #export ENV GENIE_REWEIGHT_GET_VERSION="$(echo ${GENIE_REWEIGHT_VERSION} | sed 's,\.,_,g' )" &&\ 
     ${__wget} https://github.com/GENIE-MC/Reweight/archive/refs/tags/R-${GENIE_REWEIGHT_VERSION}.tar.gz |\
     ${__untar_to} ${GENIE_REWEIGHT} &&\
     cd ${GENIE_REWEIGHT} &&\
