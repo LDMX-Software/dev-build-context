@@ -98,52 +98,37 @@ RUN mkdir src &&\
     rm -rf src
 
 ###############################################################################
-# PYTHIA6
+# LHAPDF
 #
-# Needed for GENIE. Needs to be linked with ROOT.
+# Needed for GENIE
 #
-# Looks complicated? Tell me about it.
-# Core of what's done follows from here: 
-#   https://root-forum.cern.ch/t/root-with-pythia6-and-pythia8/19211
-# (1) Download pythia6 build tarball from ROOT. Known to lead to a build that can work with ROOT.
-# (2) Download the latest Pythia6 (6.4.2.8) from Pythia. Yes, it's still ancient.
-# (3) Declare extern some definitions that need to be extern via sed. 
-#     Compiler/linker warns. Hard-won solution.
-# (4) Build with C and FORTRAN the various pieces.
-# (5) Put everything in a directory in the install area, and cleanup.
-#
-# (Ideally GENIE works with Pythia8? But not sure that works yet despite the adverts that it does.)
-# 
+# - We disable the python subpackage because it is based on Python2 whose
+#   executable has been removed from Ubuntu 22.04.
 ###############################################################################
-ENV PYTHIA_VERSION="6.428"
-ENV PREVIOUS_PYTHIA_VERSION="6.416"
-ENV PYTHIA_MAJOR_VERSION=6
-LABEL pythia.version=${PYTHIA_VERSION}
-#"6.428"
-# Pythia uses an un-dotted version file naming convention. To deal with that
-# we need some string manipulation and exports that work best with bash 
-#ENV PYTHIA_MAJOR_VERSION=$(awk '{print int($1) }' <<< ${PYTHIA_VERSION} ) 
-#    export PYTHIA_MAJOR_VERSION=$(awk '{print int($1) }' <<< ${PYTHIA_VERSION} )  &&\
+LABEL lhapdf.version="6.5.5"
+RUN mkdir src &&\
+    ${__wget} https://lhapdf.hepforge.org/downloads/?f=LHAPDF-6.5.5.tar.gz |\
+      ${__untar} &&\
+    cd src &&\
+    ./configure --disable-python --prefix=${__prefix} &&\
+    make -j$NPROC install &&\
+    cd ../ &&\
+    rm -rf src
 
+###############################################################################
+# PYTHIA8
+###############################################################################
+RUN install-ubuntu-packages \
+    rsync
+
+LABEL pythia.version="8.313"
 RUN mkdir src && \
-    export PYTHIA_VERSION_INTEGER=$(echo ${PYTHIA_VERSION} | awk '{print $1*1000}')  &&\
-    export PREVIOUS_PYTHIA_VERSION_INTEGER=$(echo ${PYTHIA_VERSION} | awk '{print $1*1000}')  &&\
-    ${__wget} https://root.cern.ch/download/pythia${PYTHIA_MAJOR_VERSION}.tar.gz | ${__untar} &&\
-    wget --no-check-certificate https://pythia.org/download/pythia${PYTHIA_MAJOR_VERSION}/pythia${PYTHIA_VERSION_INTEGER}.f &&\
-    mv pythia${PYTHIA_VERSION_INTEGER}.f src/pythia${PYTHIA_VERSION_INTEGER}.f && rm -rf src/pythia${PREVIOUS_PYTHIA_VERSION_INTEGER}.f &&\
-    cd src/ &&\
-    sed -i 's/int py/extern int py/g' pythia${PYTHIA_MAJOR_VERSION}_common_address.c && \
-    sed -i 's/extern int pyuppr/int pyuppr/g' pythia${PYTHIA_MAJOR_VERSION}_common_address.c && \
-    sed -i 's/char py/extern char py/g' pythia${PYTHIA_MAJOR_VERSION}_common_address.c && \
-    echo 'void MAIN__() {}' >main.c && \
-    gcc -c -fPIC -shared main.c -lgfortran && \
-    gcc -c -fPIC -shared pythia${PYTHIA_MAJOR_VERSION}_common_address.c -lgfortran && \
-    gfortran -c -fPIC -shared pythia*.f && \
-    gfortran -c -fPIC -shared -fno-second-underscore tpythia${PYTHIA_MAJOR_VERSION}_called_from_cc.F && \
-    gfortran -shared -Wl,-soname,libPythia${PYTHIA_MAJOR_VERSION}.so -o libPythia${PYTHIA_MAJOR_VERSION}.so main.o  pythia*.o tpythia*.o &&\
-    mkdir -p ${__prefix}/pythia${PYTHIA_MAJOR_VERSION} && cp -r * ${__prefix}/pythia${PYTHIA_MAJOR_VERSION}/ &&\
-    cd ../ && rm -rf src &&\
-    echo "${__prefix}/pythia${PYTHIA_MAJOR_VERSION}/" > /etc/ld.so.conf.d/pythia${PYTHIA_MAJOR_VERSION}.conf 
+    ${__wget} https://pythia.org/download/pythia83/pythia8313.tgz | ${__untar} &&\
+    cd src &&\
+    ./configure --with-lhapdf6 --prefix=${__prefix} &&\
+    make -j$NPROC install &&\
+    cd ../ &&\
+    rm -rf src
 
 ###############################################################################
 # CERN's ROOT
@@ -206,12 +191,13 @@ RUN mkdir src &&\
       -Dgnuinstall=ON \
       -Dgminimal=ON \
       -Dasimage=ON \
+      -Dgeom=ON \
       -Dgdml=ON \
       -Dopengl=ON \
       -Dpyroot=ON \
       -Dxrootd=OFF \
-      -Dmathmore=ON \
-      -Dgeom=ON \
+      -Dmathmore=ON \   
+      -Dpythia8=ON \    
       -B build \
       -S src \
     && cmake --build build --target install -j$NPROC &&\
@@ -289,6 +275,98 @@ RUN mkdir src &&\
     &&\
     rm -rf src 
 
+###############################################################################
+# Install HEPMC for use as in interface with GENIE
+#
+###############################################################################
+ENV HEPMC3=3.3.0
+LABEL hepmc3.version="${HEPMC3}"
+RUN mkdir src &&\
+    ${__wget} http://hepmc.web.cern.ch/hepmc/releases/HepMC3-${HEPMC3}.tar.gz |\
+      ${__untar} &&\
+    cmake \
+      -DCMAKE_INSTALL_PREFIX=/usr/local \
+      -DHEPMC3_ENABLE_ROOTIO:BOOL=ON \
+#      -DHEPMC3_ENABLE_PROTOBUFIO:BOOL=ON \
+      -DHEPMC3_ENABLE_TEST:BOOL=OFF \
+      -DHEPMC3_INSTALL_INTERFACES:BOOL=ON \
+      -DHEPMC3_BUILD_STATIC_LIBS:BOOL=ON \
+      -DHEPMC3_BUILD_DOCS:BOOL=OFF \
+      -DHEPMC3_ENABLE_PYTHON:BOOL=ON \
+      -DHEPMC3_PYTHON_VERSIONS=3.10 \
+      -B src/build \
+      -S src \
+    &&\
+    cmake --build src/build --target install -j$NPROC && \
+    rm -rf src
+
+
+###############################################################################
+# GENIE
+#
+# Needed for ... GENIE :)
+#
+# - GENIE looks in ${ROOTSYS}/lib for various ROOT libraries it depends on.
+#   This is annoying because root installs its libs to ${ROOTSYS}/lib/root
+#   when the gnuinstall parameter is ON. We fixed this by forcing ROOT to
+#   install its libs to ${ROOTSYS}/lib even with gnuinstall ON.
+# - liblog4cpp5-dev from the Ubuntu 22.04 repos seems to be functional
+# - GENIE's binaries link to pythia6 at runtime so we need to add the pythia6
+#   library directory into the linker cache
+# - GENIE reads its configuration from files written into its source tree
+#   (and not installed), so we need to keep its source tree around
+#
+# Some errors from the build configuration
+# - The 'quota: not found' error can be ignored. It is just saving a snapshot
+#   of the build environment.
+# - The 'cant exec git' error is resolved within the perl script which
+#   deduces the version from the files in the .git directory if git is
+#   not installed.
+###############################################################################
+
+# See https://github.com/LDMX-Software/docker/pull/48
+#
+# Note that libgsl-dev needs to be available already when building ROOT to build
+# GENIE
+RUN install-ubuntu-packages \
+    liblog4cpp5-dev \
+    libtool
+
+LABEL genie.version=3.04.02
+ENV GENIE_VERSION=3_04_02-ldmx
+ENV GENIE=/usr/local/src/GENIE/Generator
+LABEL genie.version=${GENIE_VERSION}
+
+RUN mkdir -p ${GENIE} &&\
+    #export ENV GENIE_GET_VERSION="$(echo "${GENIE_VERSION}" | sed 's,\.,_,g')" &&\
+    ${__wget} https://github.com/wesketchum/Generator/archive/refs/tags/R-${GENIE_VERSION}.tar.gz |\
+      ${__untar_to} ${GENIE} &&\
+    cd ${GENIE} &&\
+    ./configure \
+      --enable-lhapdf6 \
+      --disable-lhapdf5 \
+      --enable-gfortran \
+      --with-gfortran-lib=/usr/x86_64-linux-gnu/ \
+      --disable-pythia6 \
+      --enable-pythia8 \
+      --with-pythia8-lib=${__prefix}/lib \
+      --enable-test \
+      --enable-hepmc3 \
+      --with-hepmc3-lib=/usr/local/lib \
+      --with-hepmc3-inc=/usr/local/include \
+    && \
+    make -j$NPROC && \
+    make -j$NPROC install
+
+ENV GENIE_REWEIGHT_VERSION=1_04_00
+ENV GENIE_REWEIGHT=/usr/local/src/GENIE/Reweight
+RUN mkdir -p ${GENIE_REWEIGHT} &&\
+    #export ENV GENIE_REWEIGHT_GET_VERSION="$(sed 's,\.,_,g' <<< $GENIE_REWEIGHT_VERSION )" &&\ 
+    ${__wget} https://github.com/GENIE-MC/Reweight/archive/refs/tags/R-${GENIE_REWEIGHT_VERSION}.tar.gz |\
+    ${__untar_to} ${GENIE_REWEIGHT} &&\
+    cd ${GENIE_REWEIGHT} &&\
+    make -j$NPROC && \
+    make -j$NPROC install
 
 ###############################################################################
 # Catch2

@@ -26,3 +26,4 @@ uhi
 uproot
 wheel
 xgboost
+pyhepmc
