@@ -23,7 +23,7 @@ else
 fi
 echo "::endgroup::"
 
-ldmx_sw_major="$(echo "${2}" | cut -f 1 -d .)"
+ldmx_sw_major="$(echo "${2}" | sed 's|^v||' | cut -f 1 -d .)"
 ldmx_sw_minor="$(echo "${2}" | cut -f 2 -d .)"
 
 echo "::group::build ldmx-sw"
@@ -33,7 +33,7 @@ if [ "${2}" = "trunk" ] || [ "${ldmx_sw_major}" -gt 4 ] || [ "${ldmx_sw_major}" 
   just ldmx-sw/build
 else
   denv cmake -B ldmx-sw/build -S ldmx-sw
-  denv cmake --build ldmx-sw build
+  denv cmake --build ldmx-sw/build --target install
 fi
 echo "::endgroup::"
 
