@@ -114,13 +114,12 @@ RUN install-ubuntu-packages \
 
 LABEL pythia.version="8.313"
 RUN mkdir src && \
-    wget --inet4-only https://pythia.org/download/pythia83/pythia8313.tgz &&\
-    tar xzf pythia8313.tgz --strip-components 1 --directory src &&\
+    ${__wget} https://pythia.org/download/pythia83/pythia8313.tgz | ${__untar} &&\
     cd src &&\
     ./configure --with-lhapdf6 --prefix=${__prefix} &&\
     make -j$NPROC install &&\
     cd ../ &&\
-    rm -rf src pythia8313.tgz
+    rm -rf src
 
 ###############################################################################
 # CERN's ROOT
