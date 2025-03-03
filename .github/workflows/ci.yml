@@ -20,118 +20,118 @@ env:
   REGISTRY_IMAGE: ldmx/dev
 
 jobs:
-  build:
-    timeout-minutes: 43200
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-        - platform: linux/arm64
-          os: self-hosted
-        - platform: linux/amd64
-          os: ubuntu-latest
-    runs-on: ${{ matrix.os }}
-    steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v4
-      -
-        name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY_IMAGE }}
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      -
-        name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      -
-        name: Build and push by digest
-        id: build
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          cache-from: type=local,src=/home/github/layer-cache/${{matrix.platform}}
-          cache-to: type=local,dest=/home/github/layer-cache/${{matrix.platform}}-new,mode=max
-          platforms: ${{ matrix.platform }}
-          labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
-      -
-        # Temp fix
-        # https://github.com/docker/build-push-action/issues/252
-        # https://github.com/moby/buildkit/issues/1896
-        name: Move cache
-        run: |
-          rm -rf /home/github/layer-cache/${{matrix.platform}}
-          mv /home/github/layer-cache/${{matrix.platform}}-new /home/github/layer-cache/${{matrix.platform}}  
-      -
-        name: Export digest
-        id: export-digest
-        run: |
-          mkdir digest
-          digest="${{ steps.build.outputs.digest }}"
-          platform="${{ matrix.platform }}"
-          digest_name="${platform#linux/}-digest"
-          digest_file="digest/${digest#sha256:}"
-          touch "${digest_file}"
-          echo "name=${digest_name}" >> "$GITHUB_OUTPUT"
-          echo "file=${digest_file}" >> "$GITHUB_OUTPUT"
-      -
-        name: Upload digest
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ steps.export-digest.outputs.name }}
-          path: ${{ steps.export-digest.outputs.file }}
-          if-no-files-found: error
-
-  merge:
-    runs-on: ubuntu-latest
-    needs:
-      - build
-    steps:
-      -
-        name: Download digests
-        uses: actions/download-artifact@v4
-        with:
-          path: digests
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      -
-        name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY_IMAGE }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-      -
-        name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      -
-        name: Create manifest list and push
-        working-directory: digests
-        run: |
-          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(find -type f -exec basename {} ';' | xargs printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ')
-      -
-        name: Inspect image
-        run: |
-          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
+#  build:
+#    timeout-minutes: 43200
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        include:
+#        - platform: linux/arm64
+#          os: self-hosted
+#        - platform: linux/amd64
+#          os: ubuntu-latest
+#    runs-on: ${{ matrix.os }}
+#    steps:
+#      -
+#        name: Checkout
+#        uses: actions/checkout@v4
+#      -
+#        name: Docker meta
+#        id: meta
+#        uses: docker/metadata-action@v5
+#        with:
+#          images: ${{ env.REGISTRY_IMAGE }}
+#      -
+#        name: Set up QEMU
+#        uses: docker/setup-qemu-action@v3
+#      -
+#        name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v3
+#      -
+#        name: Login to Docker Hub
+#        uses: docker/login-action@v3
+#        with:
+#          username: ${{ secrets.DOCKER_USERNAME }}
+#          password: ${{ secrets.DOCKER_PASSWORD }}
+#      -
+#        name: Build and push by digest
+#        id: build
+#        uses: docker/build-push-action@v6
+#        with:
+#          context: .
+#          cache-from: type=local,src=/home/github/layer-cache/${{matrix.platform}}
+#          cache-to: type=local,dest=/home/github/layer-cache/${{matrix.platform}}-new,mode=max
+#          platforms: ${{ matrix.platform }}
+#          labels: ${{ steps.meta.outputs.labels }}
+#          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+#      -
+#        # Temp fix
+#        # https://github.com/docker/build-push-action/issues/252
+#        # https://github.com/moby/buildkit/issues/1896
+#        name: Move cache
+#        run: |
+#          rm -rf /home/github/layer-cache/${{matrix.platform}}
+#          mv /home/github/layer-cache/${{matrix.platform}}-new /home/github/layer-cache/${{matrix.platform}}  
+#      -
+#        name: Export digest
+#        id: export-digest
+#        run: |
+#          mkdir digest
+#          digest="${{ steps.build.outputs.digest }}"
+#          platform="${{ matrix.platform }}"
+#          digest_name="${platform#linux/}-digest"
+#          digest_file="digest/${digest#sha256:}"
+#          touch "${digest_file}"
+#          echo "name=${digest_name}" >> "$GITHUB_OUTPUT"
+#          echo "file=${digest_file}" >> "$GITHUB_OUTPUT"
+#      -
+#        name: Upload digest
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: ${{ steps.export-digest.outputs.name }}
+#          path: ${{ steps.export-digest.outputs.file }}
+#          if-no-files-found: error
+#
+#  merge:
+#    runs-on: ubuntu-latest
+#    needs:
+#      - build
+#    steps:
+#      -
+#        name: Download digests
+#        uses: actions/download-artifact@v4
+#        with:
+#          path: digests
+#      -
+#        name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v3
+#      -
+#        name: Docker meta
+#        id: meta
+#        uses: docker/metadata-action@v5
+#        with:
+#          images: ${{ env.REGISTRY_IMAGE }}
+#          tags: |
+#            type=ref,event=branch
+#            type=ref,event=pr
+#            type=semver,pattern={{version}}
+#            type=semver,pattern={{major}}.{{minor}}
+#      -
+#        name: Login to Docker Hub
+#        uses: docker/login-action@v3
+#        with:
+#          username: ${{ secrets.DOCKER_USERNAME }}
+#          password: ${{ secrets.DOCKER_PASSWORD }}
+#      -
+#        name: Create manifest list and push
+#        working-directory: digests
+#        run: |
+#          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+#            $(find -type f -exec basename {} ';' | xargs printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ')
+#      -
+#        name: Inspect image
+#        run: |
+#          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
 
   list-ldmx-sw-to-test:
     name: List ldmx-sw Versions to Test
@@ -146,7 +146,7 @@ jobs:
   test:
     needs:
       - list-ldmx-sw-to-test
-      - merge
+#      - merge
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -182,4 +182,5 @@ jobs:
         just-version: 1.26.0
     - 
       name: Test the Image
-      run: ./ci/test-ldmx-sw $(jq -r .tags[0] <<< "${DOCKER_METADATA_OUTPUT_JSON}") ${{ matrix.ldmx_sw }}
+      run: ./ci/test-ldmx-sw ldmx/dev:latest ${{ matrix.ldmx_sw }}
+      #run: ./ci/test-ldmx-sw $(jq -r .tags[0] <<< "${DOCKER_METADATA_OUTPUT_JSON}") ${{ matrix.ldmx_sw }}
