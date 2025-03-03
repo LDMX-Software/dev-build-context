@@ -165,6 +165,11 @@ jobs:
           type=ref,event=pr
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
+    -
+      name: Install just
+      uses: extractions/setup-just@v2
+      with:
+        just-version: 1.26.0
     - 
       name: Test the Image
       run: ./ci/test-ldmx-sw $(jq -r .tags[0] <<< "${DOCKER_METADATA_OUTPUT_JSON}") ${{ matrix.ldmx_sw }}
