@@ -23,9 +23,18 @@ else
 fi
 echo "::endgroup::"
 
+ldmx_sw_major="$(echo "${2}" | cut -f 1 -d .)"
+ldmx_sw_minor="$(echo "${2}" | cut -f 2 -d .)"
+
 echo "::group::build ldmx-sw"
-denv cmake -B ldmx-sw/build -S ldmx-sw
-denv cmake --build ldmx-sw build
+if [ "${2}" = "trunk" ] || [ "${ldmx_sw_major}" -gt 4 ] || [ "${ldmx_sw_major}" -eq 4 ] && [ "${ldmx_sw_minor}" -gt 0 ]; then
+  echo "we can use just since we are on trunk or a release >= 4.1.0"
+  just ldmx-sw/configure
+  just ldmx-sw/build
+else
+  denv cmake -B ldmx-sw/build -S ldmx-sw
+  denv cmake --build ldmx-sw build
+fi
 echo "::endgroup::"
 
 echo "::group::basic simulation run"
