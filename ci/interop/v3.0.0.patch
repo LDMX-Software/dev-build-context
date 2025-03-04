@@ -13,10 +13,30 @@ index 5c08246c..29b9dcab 100644
  # so that it can clear the cache variables and construct its own dictionary.
 Submodule cmake contains modified content
 diff --git a/cmake/FindONNXRuntime.cmake b/cmake/FindONNXRuntime.cmake
-index 348e349..3df0cb6 100644
+index 348e349..df03c19 100644
 --- a/cmake/FindONNXRuntime.cmake
 +++ b/cmake/FindONNXRuntime.cmake
-@@ -65,11 +65,11 @@ macro(download_onnxruntime version destination)
+@@ -47,16 +47,16 @@ macro(download_onnxruntime version destination)
+   endif()
+ 
+   # Extract the archive
+-  execute_process(COMMAND tar -zxvf ${file_prefix}.tgz
++  execute_process(COMMAND tar -zxvf ${file_prefix}.tgz --strip-components=1
+                   WORKING_DIRECTORY ${destination})
+ 
+   # Set the path to the include and libraries to facilitate finding the
+   # dependency.
+   set(ONNXRuntime_INCLUDE_DIRS
+-      "${destination}/${file_prefix}/include"
++      "${destination}/include"
+       CACHE INTERNAL "")
+   set(ONNXRuntime_LIBRARIES
+-      "${destination}/${file_prefix}/lib"
++      "${destination}/lib"
+       CACHE INTERNAL "")
+   set(ONNXRuntime_VERSION
+       ${version}
+@@ -65,15 +65,15 @@ macro(download_onnxruntime version destination)
  endmacro()
  
  if(NOT TARGET ONNXRuntime::Interface)
@@ -33,3 +53,8 @@ index 348e349..3df0cb6 100644
  
    # If onnxruntime isn't found, download it.
    if(NOT onnxruntime_include_dir)
+-    download_onnxruntime(1.2.0 ${CMAKE_INSTALL_PREFIX}/external)
++    download_onnxruntime(1.2.0 ${CMAKE_INSTALL_PREFIX})
+   endif()
+ 
+   # Create the target
