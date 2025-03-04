@@ -28,12 +28,18 @@ ldmx_sw_major="$(echo "${2}" | sed 's|^v||' | cut -f 1 -d .)"
 ldmx_sw_minor="$(echo "${2}" | cut -f 2 -d .)"
 
 echo "::group::build ldmx-sw"
+use_just=false
 if [ "${2}" = "trunk" ]; then
   echo "we can use just since we are on trunk"
+  use_just=true
 elif [ "${ldmx_sw_major}" -gt 4 ] || [ "${ldmx_sw_major}" -eq 4 ] && [ "${ldmx_sw_minor}" -gt 0 ]; then
   echo "we can use just since we are on a release >= 4.1.0"
+  use_just=true
+fi
+
+if ${use_just}; then
   just ldmx-sw/configure
-  just ldmx-sw/build
+  just ldmx-sw/build  
 else
   denv cmake -B ldmx-sw/build -S ldmx-sw
   denv cmake --build ldmx-sw/build --target install
