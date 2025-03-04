@@ -3,9 +3,9 @@
 set -o errexit
 set -o nounset
 
-curl -s https://tomeichlersmith.github.io/denv/install | sh
-
 echo "::group::initialize environment"
+curl -s https://tomeichlersmith.github.io/denv/install | sh
+denv check
 denv init ${1}
 echo "::endgroup::"
 
@@ -18,6 +18,7 @@ patch_file="ci/interop/${2}.patch"
 if [ -f "${patch_file}" ]; then
   echo "applying ${patch_file}"
   git -C ldmx-sw apply "../${patch_file}"
+  git -C ldmx-sw diff
 else
   echo "no patches found (${patch_file} does not exist)"
 fi
@@ -27,8 +28,10 @@ ldmx_sw_major="$(echo "${2}" | sed 's|^v||' | cut -f 1 -d .)"
 ldmx_sw_minor="$(echo "${2}" | cut -f 2 -d .)"
 
 echo "::group::build ldmx-sw"
-if [ "${2}" = "trunk" ] || [ "${ldmx_sw_major}" -gt 4 ] || [ "${ldmx_sw_major}" -eq 4 ] && [ "${ldmx_sw_minor}" -gt 0 ]; then
-  echo "we can use just since we are on trunk or a release >= 4.1.0"
+if [ "${2}" = "trunk" ]; then
+  echo "we can use just since we are on trunk"
+elif [ "${ldmx_sw_major}" -gt 4 ] || [ "${ldmx_sw_major}" -eq 4 ] && [ "${ldmx_sw_minor}" -gt 0 ]; then
+  echo "we can use just since we are on a release >= 4.1.0"
   just ldmx-sw/configure
   just ldmx-sw/build
 else
