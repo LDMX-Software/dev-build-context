@@ -46,6 +46,12 @@ jobs:
       - name: Build with mdBook
         run: mdbook build
         working-directory: docs
+      - name: Check Links
+        id: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          fail: true
+          args: ./docs/book
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
