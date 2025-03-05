@@ -1,3 +1,16 @@
+<!-- 
+DEVELOPER NOTICE
+
+Since this file is not in docs/src but we still copy it there for creating the website,
+we need to have all links in this file be the full link to the website so that the
+website works properly.
+
+Instead of
+    [my link](docs/src/page.md)
+Do
+    [my link](https://ldmx-software.github.io/dev-build-context/page.html)
+-->
+
 # Development Image Build Context
 The build context for the `ldmx/dev` images used for developing and running ldmx-sw.
 
@@ -40,8 +53,10 @@ Software Package | Version | Construction Process
 [Catch2](https://github.com/catchorg/Catch2) | 3.3.1 | Built from source
 [ONNX Runtime](https://github.com/microsoft/onnxruntime) | 1.15.0 | Download pre-built binaries
 
-A detailed list of all packages installed from ubuntu repositories is given [here](docs/src/ubuntu-packages.md),
-and documentation on the workflow and runner used to build the image is [here](docs/src/runner.md).
+A detailed list of all packages installed from ubuntu repositories is given
+[here](https://ldmx-software.github.io/dev-build-context/ubuntu-packages.html),
+and documentation on the workflow and runner used to build the image is
+[here](https://ldmx-software.github.io/dev-build-context/runner.html).
 
 ### Python Packages for Analyses
 Installed in Python 3.
