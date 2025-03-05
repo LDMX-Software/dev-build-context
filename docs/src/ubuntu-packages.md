@@ -1,6 +1,6 @@
 # Ubuntu Packages
 Here I try to list all of the installed ubuntu packages and give an explanation of why they are included.
-Lot's of these packages are installed into the [ROOT official docker container](https://github.com/root-project/root-docker/blob/master/ubuntu/Dockerfile) and so I have copied them here. 
+Lot's of these packages are installed into the [ROOT official docker container](https://github.com/root-project/root-docker/blob/master/ubuntu2404/packages) and so I have copied them here. 
 I have looked into their purpose by a combination of googling the package name and looking at [ROOT's reason for them](https://root.cern/install/dependencies/). 
 
 In the Dockerfile, most packages are added when they are needed for the rest of
@@ -15,8 +15,8 @@ ldmx-sw, its dependencies, or the container environment use the install command
 at the end of the Dockerfile.
 
 Note: If you are looking to add python packages, prefer adding them to the
-[python packages file](../python_packages.txt) rather than installing them from
-the ubuntu repositories.
+[python packages file](https://github.com/LDMX-Software/dev-build-context/blob/main/python_packages.txt)
+rather than installing them from the ubuntu repositories.
 
 Package | Necessary | Reason
 ---|---|---
@@ -69,7 +69,6 @@ libnss-myhostname | Yes | Necessary for distrobox support
 libpcre++-dev | Yes | Regular expression pattern matching
 libpng-dev | Yes | Saving plots as PNGs
 libpq-dev | No | Light binaries and headers for PostgreSQL applications
-libpythia8-dev | No | [Pythia8](http://home.thep.lu.se/~torbjorn/pythia81html/Welcome.html) HEP simulation
 libsqlite3-dev | No | Interact with SQL database
 libssl-dev | Yes | Securely interact with other computers and encrypt files
 libtbb-dev | No | Multi-threading

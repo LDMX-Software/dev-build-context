@@ -27,7 +27,7 @@ this directory if users wish to run their developments within the container.
 This install location is put into the ldmx-sw CMakeLists.txt so users will not need
 to change it unless they wish to do more advanced development.
 
-[^1]: See [LDMX-Software/docker Issue #38](https://github.com/LDMX-Software/docker/issues/38).
+[^1]: See [LDMX-Software/dev-build-context Issue #38](https://github.com/LDMX-Software/dev-build-context/issues/38).
 We may change this assumption to make it clearer that other packages could be installed at this location besides ldmx-sw.
 
 ## Determining an Image's Version
