@@ -24,3 +24,11 @@ Many versions of ldmx-sw require the same patch and so instead of copying the
 same file, I have just symlinked a specific version's patch file to the previous
 version so that developers only need to update a patch file for the version
 where the (now breaking) change was introduced.
+
+If you find yourself needing to update a link in the symlink chain, make sure
+to delete the symlink before writing to the patch file. Otherwise, the changed
+patch will be written to the file that the symlink points to.
+```
+rm path/to/ci/interop/$(git describe --tags).patch
+git diff [--submodule=diff] path/to/ci/interop/$(git describe --tags).patch
+```
