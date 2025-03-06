@@ -11,6 +11,19 @@ index 5c08246c..29b9dcab 100644
  
  # The EventDisplay is stand-a-lone and _needs_ to be after everything else
  # so that it can clear the cache variables and construct its own dictionary.
+Submodule Conditions contains modified content
+diff --git a/Conditions/include/Conditions/SimpleTableCondition.h b/Conditions/include/Conditions/SimpleTableCondition.h
+index e418c42..79ed3a3 100644
+--- a/Conditions/include/Conditions/SimpleTableCondition.h
++++ b/Conditions/include/Conditions/SimpleTableCondition.h
+@@ -7,6 +7,7 @@
+ #define FRAMEWORK_SIMPLETABLECONDITION_H_
+ 
+ #include <vector>
++#include <cstdint>
+ 
+ #include "Framework/ConditionsObject.h"
+ #include "Framework/Exception/Exception.h"
 Submodule cmake contains modified content
 diff --git a/cmake/FindONNXRuntime.cmake b/cmake/FindONNXRuntime.cmake
 index 348e349..df03c19 100644
