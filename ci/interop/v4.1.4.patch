@@ -1,1 +1,23 @@
-v4.0.5.patch
+diff --git a/Conditions/include/Conditions/SimpleTableCondition.h b/Conditions/include/Conditions/SimpleTableCondition.h
+index d34d930d..b69f81c7 100644
+--- a/Conditions/include/Conditions/SimpleTableCondition.h
++++ b/Conditions/include/Conditions/SimpleTableCondition.h
+@@ -8,6 +8,7 @@
+ 
+ #include <ostream>
+ #include <vector>
++#include <cstdint>
+ 
+ #include "Framework/ConditionsObject.h"
+ #include "Framework/Exception/Exception.h"
+diff --git a/TrigScint/src/TrigScint/Firmware/clusterproducer_sw.cxx b/TrigScint/src/TrigScint/Firmware/clusterproducer_sw.cxx
+index 140011d9..0e07b681 100644
+--- a/TrigScint/src/TrigScint/Firmware/clusterproducer_sw.cxx
++++ b/TrigScint/src/TrigScint/Firmware/clusterproducer_sw.cxx
+@@ -1,5 +1,6 @@
+ #include <stdio.h>
+ 
++#include <array>
+ #include <iostream>
+ 
+ #include "TrigScint/Firmware/clusterproducer.h"
