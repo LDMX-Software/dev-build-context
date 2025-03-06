@@ -1,1 +1,13 @@
-v3.2.12.patch
+Submodule Conditions contains modified content
+diff --git a/Conditions/include/Conditions/SimpleTableCondition.h b/Conditions/include/Conditions/SimpleTableCondition.h
+index 467d8b9..632de04 100644
+--- a/Conditions/include/Conditions/SimpleTableCondition.h
++++ b/Conditions/include/Conditions/SimpleTableCondition.h
+@@ -8,6 +8,7 @@
+ 
+ #include <vector>
+ #include <ostream>
++#include <cstdint>
+ 
+ #include "Framework/ConditionsObject.h"
+ #include "Framework/Exception/Exception.h"
