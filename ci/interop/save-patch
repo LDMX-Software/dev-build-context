@@ -1,0 +1,67 @@
+#!/bin/bash
+#  save the patched version of ldmx-sw into a patch file
+
+set -o nounset
+set -o errexit
+
+usage() {
+  cat <<\HELP
+
+ USAGE:
+  ./path/to/ci/interop/save-patch [path/to/ldmx-sw] [-h|--help]
+
+ ARGUMENTS
+  -h|--help       : print this help and exit
+  path/to/ldmx-sw : provide full path to ldmx-sw, otherwise tries to use current directory
+
+HELP
+}
+
+ci_interop_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)"
+ldmx_sw_dir="${PWD}" # default to current directory
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -*)
+      echo "ERROR: Unknown option '${1}'"
+      usage
+      exit 1
+      ;;
+    *)
+      if [ -d "${1}" ]; then
+        ldmx_sw_dir="$(cd -- "${1}" &> /dev/null && pwd)"
+      else
+        echo "ERROR: '${1}' is not a directory."
+        exit 1
+      fi
+      ;;
+  esac
+  shift
+done
+
+cd "${ldmx_sw_dir}"
+
+if ! git rev-parse --git-dir &> /dev/null; then
+  echo "ERROR: '${ldmx_sw_dir}' is not a git repository."
+  exit 2
+fi
+
+first_remote_url=$(git remote get-url $(git remote))
+if ! [[ "${first_remote_url}" =~ .*LDMX-Software/ldmx-sw.* ]]; then
+  echo "ERROR: '${ldmx_sw_dir}' is not ldmx-sw. It points to '${first_remote_url}'."
+  exit 2
+fi
+
+# inside ldmx-sw
+version=$(git describe --tags)
+diff_cmd="git diff"
+if [[ "${version}" =~ ^v3 ]]; then
+  diff_cmd="${diff_cmd} --submodule=diff"
+fi
+
+rm ${ci_interop_dir}/${version}.patch
+${diff_cmd} > ${ci_interop_dir}/${version}.patch
+

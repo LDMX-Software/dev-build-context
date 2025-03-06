@@ -7,28 +7,14 @@ and compilers.
 They are `git apply`ed within ldmx-sw and are applied before the configuration (`cmake`)
 step so that they can modify the build configuration files if need be.
 
-For creating a patch file for v3 versions of ldmx-sw, you need to use
+For creating a patch files, there is a small script in this directory
+that runs the appropriate `git` commands for you.
 ```
-git diff --submodule=diff
-```
-so that the patches to files within the ldmx-sw submodules are captured.
-For later versions of ldmx-sw, `git diff` works like normal.
-In any case, these patch files are just the output of `git diff` redirected
-to them.
-```
-cd path/to/ldmx-sw
-git diff > path/to/ci/interop/$(git describe --tags).patch
+# inside of the ldmx-sw you have patched
+path/to/ci/interop/save-patch
 ```
 
 Many versions of ldmx-sw require the same patch and so instead of copying the
 same file, I have just symlinked a specific version's patch file to the previous
 version so that developers only need to update a patch file for the version
 where the (now breaking) change was introduced.
-
-If you find yourself needing to update a link in the symlink chain, make sure
-to delete the symlink before writing to the patch file. Otherwise, the changed
-patch will be written to the file that the symlink points to.
-```
-rm path/to/ci/interop/$(git describe --tags).patch
-git diff [--submodule=diff] path/to/ci/interop/$(git describe --tags).patch
-```
