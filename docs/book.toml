@@ -10,8 +10,8 @@ create-missing = false
 
 [output.html]
 mathjax-support = true
-git-repository-url = "https://github.com/LDMX-Software/docker/tree/main/"
-edit-url-template = "https://github.com/LDMX-Software/docker/edit/main/docs/{path}"
+git-repository-url = "https://github.com/LDMX-Software/dev-build-context/tree/main/"
+edit-url-template = "https://github.com/LDMX-Software/dev-build-context/edit/main/docs/{path}"
 additional-css = ["mdbook-admonish.css"]
 
 [preprocessor]
