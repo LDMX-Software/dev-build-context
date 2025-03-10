@@ -24,7 +24,7 @@ jobs:
           git config --global user.name ldmx-sw-test-bot
           git config --global user.email ldmx-sw-test-bot@users.noreply.github.com
           git switch -c auto-ldmx-sw-test-update
-          git add ci/ldmx-sw-to-test.json
+          git add ci/
           git commit -m "Auto ldmx-sw Version Update" || exit 0
           git push -fu origin auto-ldmx-sw-test-update
           gh pr create \
