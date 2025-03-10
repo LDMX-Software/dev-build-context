@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0
       - name: fetch latest releases
         run: |
-          ./ci/ldmx-sw-dependabot --apply 
+          ./ci/ldmx-sw-dependabot
           git config --global user.name ldmx-sw-test-bot
           git config --global user.email ldmx-sw-test-bot@users.noreply.github.com
           git switch -c auto-ldmx-sw-test-update
