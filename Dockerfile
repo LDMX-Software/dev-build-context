@@ -360,7 +360,7 @@ RUN mkdir -p ${GENIE_REWEIGHT} &&\
 ###############################################################################
 # Catch2
 ###############################################################################
-ENV CATCH2_VERSION="3.3.1"
+ENV CATCH2_VERSION="3.8.0"
 LABEL catch2.version=${CATCH2_VERSION}
 RUN mkdir -p src &&\
     ${__wget} https://github.com/catchorg/Catch2/archive/refs/tags/v${CATCH2_VERSION}.tar.gz |\
