@@ -268,8 +268,22 @@ RUN mkdir src &&\
     rm -rf src 
 
 ###############################################################################
+# Acts
+###############################################################################
+ENV ACTS_VERSION="36.0.0"
+LABEL acts.version=${ACTS_VERSION}
+RUN mkdir -p src &&\
+    ${__wget} https://github.com/acts-project/acts/archive/refs/tags/v${ACTS_VERSION}.tar.gz |\
+      ${__untar} &&\
+    cmake \
+      -DCMAKE_CXX_STANDARD=20 \
+      -B src/build \
+      -S src &&\
+    cmake --build src/build --target install &&\
+    rm -rf src
+
+###############################################################################
 # Install HEPMC for use as in interface with GENIE
-#
 ###############################################################################
 ENV HEPMC3=3.3.0
 LABEL hepmc3.version="${HEPMC3}"
