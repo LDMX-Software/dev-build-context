@@ -12,6 +12,7 @@ on:
       - '.github/workflows/mdbook.yml'
       - '.github/workflows/ldmx-sw-dependabot.yml'
       - '.github/workflows/README.md'
+      - '.github/install-mdbook'
     branches:
       - "**"
     tags:
