@@ -26,8 +26,6 @@ fetch() {
 }
 
 # update the test workflow with the passed runner and version
-# Args:
-#  1 : provide to actually apply edit, otherwise just print lines that would change
 # Output:
 #  Edits the ci/runners-to-test.json in place if 3 args provided,
 #  otherwise just prints lines that would be edited to stdout
@@ -51,12 +49,7 @@ update() {
     inf "More than a patch difference, adding ${latest} as a new test to the CI."
     jq --arg latest "${latest}" '.ldmx_sw += [$latest]' ci/ldmx-sw-to-test.json > ci/ldmx-sw-to-test.json.upd
   fi
-  if [ -z "${1}" ]; then
-    diff ci/ldmx-sw-to-test.json ci/ldmx-sw-to-test.json.upd || true
-    rm ci/ldmx-sw-to-test.json.upd
-  else
-    mv ci/ldmx-sw-to-test.json.upd ci/ldmx-sw-to-test.json
-  fi
+  mv ci/ldmx-sw-to-test.json.upd ci/ldmx-sw-to-test.json
 }
 
 help() {
@@ -70,21 +63,15 @@ help() {
 
  OPTIONS
   -h, --help : print this help and exit
-  --apply    : actually edit the ci/ldmx-sw-to-test.json instead of
-               just printing the lines that have been changed
 
 HELP
 }
 
-apply=""
 while [ "$#" -gt "0" ]; do
   case "$1" in
     -h|--help)
       help
       exit 0
-      ;;
-    --apply)
-      apply="APPLY"
       ;;
     *)
       help
@@ -95,4 +82,4 @@ while [ "$#" -gt "0" ]; do
   shift
 done
 
-update "${apply}"
+update
