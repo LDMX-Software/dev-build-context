@@ -29,7 +29,7 @@ jobs:
           git push -fu origin auto-ldmx-sw-test-update
           gh pr create \
             --base main \
-            --head auto-runner-update \
+            --head auto-ldmx-sw-test-update \
             --title "Auto ldmx-sw Version Update" \
             --body "Written by custom dependabot script that checks for new updates. PR now free to be modified/closed."
         env:
