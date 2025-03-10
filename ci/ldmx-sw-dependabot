@@ -45,6 +45,9 @@ update() {
   if [ "${latest_major}" -eq "${ci_latest_major}" ] && [ "${latest_minor}" -eq "${ci_latest_minor}" ]; then
     inf "Only a patch difference between ${latest} and ${ci_latest}, replacing ${ci_latest} with ${latest}."
     jq --arg latest "${latest}" '.ldmx_sw[-1] = $latest' ci/ldmx-sw-to-test.json > ci/ldmx-sw-to-test.json.upd
+    if [ -e "ci/interop/${ci_latest}.patch" ]; then
+      rm ci/interop/${ci_latest}.patch
+    fi
   else
     inf "More than a patch difference, adding ${latest} as a new test to the CI."
     jq --arg latest "${latest}" '.ldmx_sw += [$latest]' ci/ldmx-sw-to-test.json > ci/ldmx-sw-to-test.json.upd
