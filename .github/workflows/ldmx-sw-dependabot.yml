@@ -9,7 +9,7 @@ on:
 
 jobs:
   check-on-runner-releases:
-    permissions: write-all
+    permissions:
       pull-requests: write
       contents: write
       actions: write
