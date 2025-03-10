@@ -26,7 +26,7 @@ jobs:
           git switch -c auto-ldmx-sw-test-update
           git add ci/ldmx-sw-to-test.json
           git commit -m "Auto ldmx-sw Version Update" || exit 0
-          git push -fu origin auto-runner-update
+          git push -u origin auto-runner-update
           gh pr create \
             --base main \
             --head auto-runner-update \
