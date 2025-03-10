@@ -195,7 +195,8 @@ RUN mkdir src &&\
     rm -rf build src &&\
     ldconfig
 ENV ROOTSYS=${__prefix}
-ENV PYTHONPATH=${ROOTSYS}/lib:${PYTHONPATH}
+# first instance of PYTHONPATH, so no appending
+ENV PYTHONPATH=${ROOTSYS}/lib
 ENV CLING_STANDARD_PCH=none
 
 ###############################################################################
