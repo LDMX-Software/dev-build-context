@@ -268,21 +268,6 @@ RUN mkdir src &&\
     rm -rf src 
 
 ###############################################################################
-# Acts
-###############################################################################
-ENV ACTS_VERSION="36.0.0"
-LABEL acts.version=${ACTS_VERSION}
-RUN mkdir -p src &&\
-    ${__wget} https://github.com/acts-project/acts/archive/refs/tags/v${ACTS_VERSION}.tar.gz |\
-      ${__untar} &&\
-    cmake \
-      -DCMAKE_CXX_STANDARD=20 \
-      -B src/build \
-      -S src &&\
-    cmake --build src/build --target install &&\
-    rm -rf src
-
-###############################################################################
 # Install HEPMC for use as in interface with GENIE
 ###############################################################################
 ENV HEPMC3=3.3.0
@@ -430,6 +415,28 @@ RUN set -x ;\
     install -D -m 0644 -t ${__prefix}/include src/include/* &&\
     rm -rf src
 
+# Dependencies for LDMX-sw and/or the container environment
+RUN install-ubuntu-packages \
+    ca-certificates \
+    clang-format \
+    libboost-all-dev \
+    libssl-dev
+
+###############################################################################
+# Acts
+###############################################################################
+ENV ACTS_VERSION="36.0.0"
+LABEL acts.version=${ACTS_VERSION}
+RUN mkdir -p src &&\
+    ${__wget} https://github.com/acts-project/acts/archive/refs/tags/v${ACTS_VERSION}.tar.gz |\
+      ${__untar} &&\
+    cmake \
+      -DCMAKE_CXX_STANDARD=20 \
+      -B src/build \
+      -S src &&\
+    cmake --build src/build --target install &&\
+    rm -rf src
+
 ###############################################################################
 # Generate the linker cache
 #    This should go AFTER all compiled dependencies so that the ld cache 
@@ -446,12 +453,6 @@ RUN ldconfig -v
 COPY ./python_packages.txt /etc/python_packages.txt
 RUN python3 -m pip install --no-cache-dir --break-system-packages --requirement /etc/python_packages.txt
 
-# Dependencies for LDMX-sw and/or the container environment
-RUN install-ubuntu-packages \
-    ca-certificates \
-    clang-format \
-    libboost-all-dev \
-    libssl-dev
 
 # Optional tools and developer utilities
 #
