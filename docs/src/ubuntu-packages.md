@@ -1,6 +1,6 @@
 # Ubuntu Packages
 Here I try to list all of the installed ubuntu packages and give an explanation of why they are included.
-Lot's of these packages are installed into the [ROOT official docker container](https://github.com/root-project/root-docker/blob/master/ubuntu2404/packages) and so I have copied them here. 
+Lot's of these packages are installed into the [ROOT official docker container](https://github.com/root-project/root-docker/blob/master/ubuntu2404/packages) and so I have copied them into this image.
 I have looked into their purpose by a combination of googling the package name and looking at [ROOT's reason for them](https://root.cern/install/dependencies/). 
 
 In the Dockerfile, most packages are added when they are needed for the rest of
@@ -14,90 +14,118 @@ If you want to add additional packages that aren't necessary for building
 ldmx-sw, its dependencies, or the container environment use the install command
 at the end of the Dockerfile.
 
-Note: If you are looking to add python packages, prefer adding them to the
+~~~admonish warning title="Python Packages"
+If you are looking to add python packages, prefer adding them to the
 [python packages file](https://github.com/LDMX-Software/dev-build-context/blob/main/python_packages.txt)
 rather than installing them from the ubuntu repositories.
+~~~
 
-Package | Necessary | Reason
----|---|---
-apt-utils | Yes | Necessary for distrobox support
-autoconf | Yes | Configuration of log4cpp build, needed for GENIE
-automake | Yes | Configuration of log4cpp build, needed for GENIE
-bc | Yes | Necessary for distrobox support
-binutils | Yes | Adding PPA and linking libraries
-ca-certificates | Yes | Installing certificates to trust in container
-clang-format | Yes | LDMX C++ code formatting
-cmake | Yes | Make configuration, v3.22.1 available in Ubuntu 22.04 repos
-curl | Yes | Necessary for distrobox support
-dialog | Yes | Necessary for distrobox support
-diffutils | Yes | Necessary for distrobox support
-davix-dev | No | Remote I/O, file transfer and file management
-dcap-dev | Unknown | C-API to the [DCache Access Protocol](https://dcache.org/old/manuals/libdcap.shtml)
-dpkg-dev | No | **Old** Installation from PPA
-findutils | Yes | Necessary for distrobox support
-fish | Yes | Shell necessary for distrobox support
-fonts-freefont-ttf | Yes | Fonts for plots
-g++ | Yes | Compiler with C++17 support, v11 available in Ubuntu 22.04 repos
-gcc | Yes | Compiler with C++17 support, v11 available in Ubuntu 22.04 repos
-gdb | No | Supporting debugging LDMX-sw programs within the container
-gfortran | Yes | FORTRAN compiler; needed for compiling Pythia6, which in turn is needed for GENIE
-gnupg2 | Yes | Necessary for distrobox support
-git | No | **Old** Downloading dependency sources
-less | Yes | Necessary for distrobox support
-libafterimage-dev | Yes | ROOT GUI depends on these for common shapes
-libasan8 | No | Runtime components for the compiler based instrumentation tools that come with GCC
-libboost-all-dev | Yes | Direct ldmx-sw dependency, v1.74 available in Ubuntu 22.04 repos, v1.71 required by ACTS
-libcfitsio-dev | No | Reading and writing in [FITS](https://heasarc.gsfc.nasa.gov/docs/heasarc/fits.html) data format
-libfcgi-dev | No | Open extension of CGI for internet applications
-libfftw3-dev | Yes | Computing discrete fourier transform
-libfreetype6-dev | Yes | Fonts for plots
-libftgl-dev | Yes | Rendering fonts in OpenGL
-libgfal2-dev | No | Toolkit for file management across different protocols
-libgif-dev | Yes | Saving plots as GIFs
-libgl1-mesa-dev | Yes | [MesaGL](https://mesa3d.org/) allowing 3D rendering using OpenGL
-libgl2ps-dev | Yes | Convert OpenGL image to PostScript file
-libglew-dev | Yes | [GLEW](http://glew.sourceforge.net/) library for helping use OpenGL
-libglu-dev | Yes | [OpenGL Utility Library](https://www.opengl.org/resources/libraries/)
-libgraphviz-dev | No | Graph visualization library
-libgsl-dev | Yes | GNU Scientific library for numerical calculations; needed for GENIE
-libjpeg-dev | Yes | Saving plots as JPEGs
-liblog4cpp5-dev | Yes | Dependency of GENIE
-liblz4-dev | Yes | Data compression
-liblzma-dev | Yes | Data compression
-libmysqlclient-dev | No | Interact with SQL database
-libnss-myhostname | Yes | Necessary for distrobox support
-libpcre++-dev | Yes | Regular expression pattern matching
-libpng-dev | Yes | Saving plots as PNGs
-libpq-dev | No | Light binaries and headers for PostgreSQL applications
-libsqlite3-dev | No | Interact with SQL database
-libssl-dev | Yes | Securely interact with other computers and encrypt files
-libtbb-dev | No | Multi-threading
-libtiff-dev | No | Save plots as TIFF image files
-libtool | Yes | Needed for log4cpp build, in turn needed for GENIE
-libvte-2.9[0-9]-common | Yes | Necessary for distrobox support
-libvte-common | Yes | Necessary for distrobox support
-libx11-dev | Yes | Low-level window management with X11
-libxext-dev | Yes | Low-level window management
-libxft-dev | Yes | Low-level window management
-libxml2-dev | Yes | Low-level window management
-libxmu-dev | Yes | Low-level window management
-libxpm-dev | Yes | Low-level window management
-libz-dev | Yes | Data compression
-libzstd-dev | Yes | Data compression
-lsof | Yes | Necessary for distrobox support
-locales | Yes | Configuration of TPython and other python packages
-make | Yes | Building dependencies and ldmx-sw source
-ncurses-base | Yes | Necessary for distrobox support
-passwd | Yes | Necessary for distrobox support
-pinentry-curses | Yes | Necessary for distrobox support
-procps | Yes | Necessary for distrobox support
-python3-dev | Yes | ROOT TPython and ldmx-sw ConfigurePython
-python3-pip | Yes | For downloading more python packages later
-python3-numpy | Yes | ROOT TPython requires numpy
-python3-tk | Yes | matplotlib requires python-tk for some plotting
-sudo | Yes | Necessary for distrobox support
-srm-ifce-dev | Unknown | Unknown
-time | Yes | Necessary for distrobox support
-unixodbc-dev | No | Access different data sources uniformly
-util-linux | Yes | Necessary for distrobox support
-wget | Yes | Download Xerces-C source and dowload Conditions tables in ldmx-sw
+~~~admonish note collapsible=true title="Extracting Package List from Dockerfile"
+We have settled into a relatively simple syntax for the packages in the Dockerfile
+and thus I've been able to write an `awk` script that can parse the Dockerfile
+and list the packages we install from the ubuntu repositories.
+```awk
+BEGIN {
+  in_install=0;
+}
+{
+  # check if this line is in an install command
+  if (in_install && NF > 0) {
+    # print out all entires on line except the line continuation backslash
+    for (i=1; i <= NF; i++) {
+      if ($i != "\\") {
+        print $i;
+      }
+    }
+  }
+  # update for next lines if we are opening an install command or closing
+  if ($0 ~ /^RUN install-ubuntu-packages.*$/) {
+    in_install=1;
+  } else if (NF == 0 || $1 == "RUN" && $2 != "install-ubuntu-packages") {
+    in_install=0;
+  }
+}
+```
+which can be run like
+```
+awk -f get-ubuntu-packages.awk Dockerfile
+```
+~~~
+
+Package | Reason
+---|---
+autoconf | Configuration of log4cpp build **removable**
+automake | Configuration of log4cpp build **removable**
+binutils | Adding PPA and linking libraries
+cmake | Configuration of build system
+curl | Download files from within container, distrobox support
+gcc | GNU C Compiler
+g++ | GNU C++ Compiler
+gfortran | GNU Fortran Compiler
+locales | Configuration of TPython and other python packages
+make | Building system for dependencies and ldmx-sw
+wget | Download source files for dependencies and ldmx-sw Conditions
+apt-utils | distrobox support
+bc | distrobox support
+dialog | distrobox support
+diffutils | distrobox support
+findutils | distrobox support
+fish | distrobox support, alternative interactive shell
+gnupg2 | distrobox support
+less | distrobox support, view files from within container
+libnss-myhostname | distrobox support
+libvte-2.9[0-9]-common | distrobox support
+libvte-common | distrobox support
+lsof | distrobox support
+ncurses-base | distrobox support
+passwd | distrobox support
+pinentry-curses | distrobox support
+procps | distrobox support
+sudo | distrobox support
+time | distrobox support
+util-linux | distrobox support
+zsh | alternative interactive shell
+libx11-dev | low-level window management (ROOT GUI)
+libxmu-dev | low-level window management (ROOT GUI)
+python3-dev | ROOT TPython and ldmx-sw configuration system
+python3-numpy | ROOT TPython requires numpy and downstream analysis packages
+python3-pip | Downloading more python packages
+python3-tk | matplotlib requires python-tk for some plotting
+rsync | necessary to build Pythia8 
+fonts-freefont-ttf | fonts for plots with ROOT
+libafterimage-dev | ROOT GUI needs these for common shapes
+libfftw3-dev | Discrete fourier transform in ROOT
+libfreetype6-dev | fonts for plots with ROOT
+libftgl-dev | Rendering fonts in OpenGL
+libgif-dev | Saving plots as GIFs
+libgl1-mesa-dev | [MesaGL](https://mesa3d.org) allowing 3D rendering using OpenGL
+libgl2ps-dev | Convert OpenGL image to PostScript file
+libglew-dev | [GLEW](https://glew.sourceforge.net) library for helping use OpenGL
+libglu-dev | [OpenGL Utility Library](https://www.opengl.org/resources/libraries/)
+libjpeg-dev | Saving plots as JPEGs
+liblz4-dev | Data compression in ROOT serialization
+liblzma-dev | Data compression in ROOT serialization
+libpng-dev | Saving plots as PNGs
+libx11-dev | low-level window management (ROOT GUI)
+libxext-dev | low-level window management (ROOT GUI)
+libxft-dev | low-level window management (ROOT GUI)
+libxml2-dev | XML reading and writing
+libxmu-dev | low-level window management (ROOT GUI)
+libxpm-dev | low-level window management (ROOT GUI)
+libz-dev | Data compression in ROOT serialization
+libzstd-dev | Data compression in ROOT serialization
+srm-ifce-dev | ???
+libgsl-dev | GNU Scientific Library for numerical calculations in ROOT MathMore (needed for GENIE)
+liblog4cpp5-dev | C++ Logging Library used in GENIE
+libtool | Needed for log4cpp build needed for GENIE
+ca-certificates | Installing certificates to trust within container
+clang-format | C++ Code Formatting for ldmx-sw
+libboost-all-dev | C++ Utilities for Acts and ldmx-sw
+libssl-dev | Securely interact with other computers and encrypt files
+clang | C++ Alternative Compiler for ldmx-sw
+clang-tidy | C++ Static Analyzer for ldmx-sw
+clang-tools | Additional development tools for ldmx-sw
+cmake-curses-gui | GUI for inspecting CMake configuration
+gdb | GNU DeBugger for ldmx-sw development
+libasan8 | Address sanitization for ldmx-sw
+lld | alternative linker for ldmx-sw
