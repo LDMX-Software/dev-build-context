@@ -18,11 +18,11 @@ The build context for the `ldmx/dev` images used for developing and running ldmx
     <a href="http://perso.crans.org/besson/LICENSE.html" alt="GPLv3 license">
         <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" />
     </a>
-    <a href="https://github.com/LDMX-Software/dev-build-context/actions" alt="Actions">
-        <img src="https://github.com/LDMX-Software/dev-build-context/workflows/CI/badge.svg" />
+    <a href="https://github.com/LDMX-Software/dev-build-context/actions/workflows/ci.yml" alt="Actions">
+        <img src="https://github.com/LDMX-Software/dev-build-context/actions/workflows/ci.yml/badge.svg" />
     </a>
     <a href="https://hub.docker.com/r/ldmx/dev" alt="DockerHub">
-        <img src="https://img.shields.io/github/v/release/LDMX-Software/docker" />
+        <img src="https://img.shields.io/github/v/release/LDMX-Software/dev-build-context" />
     </a>
 </p>
 
