@@ -18,41 +18,12 @@ RUN chmod +x /usr/local/bin/install-ubuntu-packages
 # Ongoing documentation for packages used is in docs/ubuntu-packages.md
 # Basic OS/System tools
 RUN install-ubuntu-packages \
-    autoconf \
-    automake \
     binutils \
     cmake \
-    curl\
     gcc g++ gfortran \
     locales \
     make \
     wget
-
-# Packages necessary for Distrobox support
-RUN install-ubuntu-packages \
-    apt-utils \
-    bc \
-    dialog \
-    diffutils \
-    findutils \
-    fish \
-    gnupg2 \
-    less \
-    libnss-myhostname \
-    libvte-2.9[0-9]-common \
-    libvte-common \
-    lsof \
-    ncurses-base \
-    passwd \
-    pinentry-curses \
-    procps \
-    sudo \
-    time \
-    util-linux \
-    zsh \
-    libx11-dev \
-    libxmu-dev \
-    && rm -rf /var/lib/apt/lists/*
 
 # Basic python support, necessary for the build steps.
 #
@@ -167,7 +138,7 @@ RUN install-ubuntu-packages \
     libz-dev \
     libzstd-dev \
     srm-ifce-dev \
-    libgsl-dev # Necessary for GENIE
+    libgsl-dev
 
 ENV ROOT_VERSION="6.34.04"
 LABEL root.version=${ROOT_VERSION}
@@ -318,8 +289,7 @@ RUN mkdir src &&\
 # Note that libgsl-dev needs to be available already when building ROOT
 # so that the MathMore target can be build which is used by GENIE
 RUN install-ubuntu-packages \
-    liblog4cpp5-dev \
-    libtool
+    liblog4cpp5-dev
 
 LABEL genie.version=3.04.02
 ENV GENIE_VERSION=3_04_02-ldmx
