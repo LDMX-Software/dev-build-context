@@ -1,6 +1,12 @@
 # Contributing
 
-> All contributions are welcome. From fixing typos in these documentation pages to patching a bug in the event reconstruction code to adding a new simulatino process. Please reach out via GitHub issues or on the LDMX slack to get started.
+~~~admonish tip title="All Contributions are Welcome"
+From fixing typos in these documentation pages
+to patching a bug in one of the dependencies
+to adding a new ubuntu or python package you find useful.
+
+Please reach out via GitHub issues or on the LDMX slack to get started.
+~~~
 
 To contribute code to the project, you will need to create an account on [github](https://github.com/) if you don't have one already, and then request to be added to the [LDMX-Software](https://github.com/orgs/LDMX-Software/) organization.
 
@@ -8,7 +14,8 @@ When adding new code, you should do this on a branch created by a command like `
 
 Then you would `git add` and `git commit` your changes to this branch.
 
-If you don't already have SSH keys configured, look at the [GitHub directions](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent). This makes it easier to push/pull to/from branches on GitHub!
+If you don't already have SSH keys configured, look at the [GitHub directions](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent).
+This makes it easier to push/pull to/from branches on GitHub!
 
 ## Pull Requests
 
