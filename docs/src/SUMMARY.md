@@ -10,6 +10,7 @@
 # Developing
 - [Contributing](contributing.md)
 - [Ubuntu Packages](ubuntu-packages.md)
-- [Runtime Configufation](runtime-config.md)
+- [Runtime Configuration](runtime-config.md)
 - [GitHub Workflows](workflows.md)
+  - [Legacy Interop](interop.md)
   - [Self-Hosted Runner](runner.md)
