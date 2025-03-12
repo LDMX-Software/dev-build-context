@@ -14,8 +14,13 @@ For docker and podman, the `inspect` command returns JSON with all of the image 
 The `jq` program just helps us parse this JSON for the specific label we are looking for,
 but you could just scroll through the output.
 ```bash
-docker inspect ldmx/dev:latest |\
-  jq 'map(.Config.Labels["org.opencontainers.image.version"])[]'
+docker inspect ldmx/dev:latest \
+  | jq 'map(.Config.Labels["org.opencontainers.image.version"])[]'
+```
+You can also avoid using `jq` and scrolling if you provide a Go template.
+```bash
+docker inspect ldmx/dev:latest \
+  --format '{{ (index .Config.Labels "org.opencontainers.image.version") }}'
 ```
 
 ### Apptainer
