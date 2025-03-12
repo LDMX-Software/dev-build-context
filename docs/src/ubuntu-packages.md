@@ -54,39 +54,14 @@ awk -f get-ubuntu-packages.awk Dockerfile
 
 Package | Reason
 ---|---
-autoconf | Configuration of log4cpp build **removable**
-automake | Configuration of log4cpp build **removable**
 binutils | Adding PPA and linking libraries
 cmake | Configuration of build system
-curl | Download files from within container, distrobox support
 gcc | GNU C Compiler
 g++ | GNU C++ Compiler
 gfortran | GNU Fortran Compiler
 locales | Configuration of TPython and other python packages
 make | Building system for dependencies and ldmx-sw
 wget | Download source files for dependencies and ldmx-sw Conditions
-apt-utils | distrobox support
-bc | distrobox support
-dialog | distrobox support
-diffutils | distrobox support
-findutils | distrobox support
-fish | distrobox support, alternative interactive shell
-gnupg2 | distrobox support
-less | distrobox support, view files from within container
-libnss-myhostname | distrobox support
-libvte-2.9[0-9]-common | distrobox support
-libvte-common | distrobox support
-lsof | distrobox support
-ncurses-base | distrobox support
-passwd | distrobox support
-pinentry-curses | distrobox support
-procps | distrobox support
-sudo | distrobox support
-time | distrobox support
-util-linux | distrobox support
-zsh | alternative interactive shell
-libx11-dev | low-level window management (ROOT GUI)
-libxmu-dev | low-level window management (ROOT GUI)
 python3-dev | ROOT TPython and ldmx-sw configuration system
 python3-numpy | ROOT TPython requires numpy and downstream analysis packages
 python3-pip | Downloading more python packages
@@ -117,7 +92,6 @@ libzstd-dev | Data compression in ROOT serialization
 srm-ifce-dev | ???
 libgsl-dev | GNU Scientific Library for numerical calculations in ROOT MathMore (needed for GENIE)
 liblog4cpp5-dev | C++ Logging Library used in GENIE
-libtool | Needed for log4cpp build needed for GENIE
 ca-certificates | Installing certificates to trust within container
 clang-format | C++ Code Formatting for ldmx-sw
 libboost-all-dev | C++ Utilities for Acts and ldmx-sw
