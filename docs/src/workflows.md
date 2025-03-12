@@ -36,3 +36,47 @@ packages from scratch and sometimes emulating a different architecture than
 the one doing the image building. For this reason, we needed to move to
 a [self-hosted runner](runner.md) solution.
 
+## Pulling by Digest
+You may want to pull an image by its digest because the manifest that creates a more helpful tag
+has not been created (e.g. the other architecture's build is still running or the merge step failed).
+You can do this by downloading the digest artifact from the workflow run
+(at the bottom of the CI Workflow "Summary" page).
+
+The digest is stored as the name of an empty file in this artifact.
+We first copy this file name into a shell variable.
+```
+cd ~/Downloads
+mkdir digest
+cd digest
+unzip ../digest-amd64.zip
+export digest=$(ls *)
+cd ..
+rm -r digest digest-amd64.zip
+```
+
+~~~admonish warning title="Architecture Specific"
+The builds referenced by digest are architecture specific.
+Grouping them together into a manifest allows the runner to choose the image based
+on the host computer's architecture.
+This means you must choose the digest artifact corresponding to your computer's architecture.
+~~~
+
+Next, we need to download the image using the 64-character digest stored in `${digest}`.
+
+### Docker/Podman
+Below, I use `docker` but you can also do the same commands with `podman` in place of `docker`.
+
+```
+docker pull ldmx/dev@sha256:${digest}
+docker tag ldmx/dev@sha256:${digest} ldmx/dev:some-helpful-name
+```
+
+### Apptainer
+~~~admonish error title="Untested"
+I have only ever needed to do this on my laptop with docker or podman installed;
+however, I'm pretty sure this will work.
+~~~
+
+```
+apptainer build ldmx_dev_some-helpful-name.sif docker://ldmx/dev@sha256:${digest}
+```
