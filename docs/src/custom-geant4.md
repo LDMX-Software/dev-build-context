@@ -1,30 +1,29 @@
-# Container with Custom Geant4
+# Using a Custom Geant4
 
 Geant4 is our main simulation engine and it has a large effect on the products of our simulation samples.
 As such, it is very common to compare multiple different versions, patches, and tweaks to Geant4 with our simulation.
 
-There are two different methods for using a custom Geant4. The first one listed is newer but more flexible and is the preferred path forward to prevent the proliferation of ldmx/dev images.
-
-## Locally Build Geant4
 With release 4.2.0 of the ldmx/dev image, the entrypoint script now checks the environment variable `LDMX_CUSTOM_GEANT4` for a path to a local installation of Geant4.
 This allows the user to override the Geant4 that is within the image with one that available locally. In this way, you can choose whichever version of Geant4 you want,
 with whatever code modifications applied, with whatever build instructions you choose.
+
+~~~admonish warning title="Confirm Image Version"
+Make sure you have an image that is at least v4.2.0.
+You can check your version of the image by [inspecting the image labels](image-version.md).
+~~~
 
 ### Building Your Geant4
 You can build your Geant4 in a similar manner as ldmx-sw. It does take much longer to compile than ldmx-sw since it is larger, so be sure to leave enough time for it.
 
 ```admonish warning title="Remember"
-You can only run this custom build of Geant4 with whatever container you are building it with, so make sure you are happy with the container version you are using.
+You can only run this custom build of Geant4 with whatever image you are building it with, so make sure you are happy with the image version you are using.
 ```
 
 ``` shell
-cd ${LDMX_BASE}
+cd path/to/ldmx # directory that contains ldmx-sw
 git clone git@github.com:LDMX-Software/geant4.git # or could be mainline Geant4 or an unpacked tar-ball
-cd geant4
-mkdir build
-cd build
-ldmx cmake <cmake-options> ..
-ldmx make install
+denv cmake -B geant4/build -S geant4 <cmake-options>
+denv cmake --build geant4/build --target install
 ```
 Now building Geant4 from source has a lot of configuration options that can be used to customize how it is built.
 Below are a few that are highlighted for how we use containers and their interaction with the Geant4 build.
@@ -219,55 +218,24 @@ own downloaded copies of the datasets.
 
 
 ### Running with your Geant4
-Just like with ldmx-sw, you can only run a specific build of Geant4 in the same container that you used to build it.
+Just like with ldmx-sw, you can only run a specific build of Geant4 in the same image that you used to build it.
 ``` shell
-ldmx setenv LDMX_CUSTOM_GEANT4=/path/to/geant4/install
+just setenv LDMX_CUSTOM_GEANT4=/path/to/geant4/install
 ```
 If you followed the procedure above, the Geant4 install will be located at `${LDMX_BASE}/geant4/install` and you can use
 this in the `setenv` command.
 ``` shell
-ldmx setenv LDMX_CUSTOM_GEANT4=${LDMX_BASE}/geant4/install
+just setenv LDMX_CUSTOM_GEANT4=${LDMX_BASE}/geant4/install
 ```
 
-By default the container will produce a rather verbose warning when using a custom Geant4 build. This is to avoid reproducibility issues caused by accidental use of the feature. You can disable it by defining the `LDMX_CUSTOM_GEANT4_CONFIRM_DEV` environment variable in the container environment 
+By default the container will produce a rather verbose warning when using a custom Geant4 build.
+This is to avoid reproducibility issues caused by accidental use of the feature.
+You can disable it by defining the `LDMX_CUSTOM_GEANT4_CONFIRM_DEV` environment variable in the container environment 
 
 ```shell
-ldmx setenv LDMX_CUSTOM_GEANT4=${LDMX_BASE}/geant4/install 
-ldmx ... # Some command 
+just setenv LDMX_CUSTOM_GEANT4=${LDMX_BASE}/geant4/install 
+denv ... # Some command 
 > Warning: You are relying on a non-container version of Geant4. This mode of operation can come with some reproducibility concerns if you aren't careful. # The actual warning is longer than this...
-ldmx setenv LDMX_CUSTOM_GEANT4_CONFIRM_DEV=yes # Can be anything other than an empty string 
-ldmx ... # No warning!
+just setenv LDMX_CUSTOM_GEANT4_CONFIRM_DEV=yes # Can be anything other than an empty string 
+denv ... # No warning!
 ```
-
-## Remote Build
-You could also build your custom version of Geant4 into the image itself.
-The container is allowed to build (almost) any release of Geant4, pulling either from the [official Geant4 repository](https://github.com/Geant4/geant4) or pulling from [LDMX's fork](https://github.com/LDMX-Software/geant4) if "LDMX" appears in the tag name requested.
-
-Most of the newer versions of Geant4 can be built the same as the current standard [LDMX.10.2.3_v0.4](https://github.com/LDMX-Software/geant4/releases/tag/LDMX.10.2.3_v0.4), so to change the tag that you want to use in the container you simply need to change the `GEANT4` parameter in the Dockerfile.
-
-``` Dockerfile
-...a bunch of crap...
-ENV GEANT4=LDMX.10.2.3_v0.4 #CHANGE ME TO YOUR TAG NAME
-... other crap ...
-```
-
-Changing this parameter _could_ be all you need, but if the build is not completing properly, you may need to change the `RUN` command that actually builds Geant4.
-
-### Building the Image
-To build a docker container, one would normally go into this repository and simply run `docker build . -t ldmx/dev:my-special-tag`, but since this container takes so long to build, if you are only making a small change, you can simply create a new branch in this repository and push it up to the GitHub repository. In this repository, there are repo actions that will automatically attempt to build the image for the container and push that image to DockerHub if it succeeds. Any non-main branches will be pused to DockerHub under the name of the branch, for example, the branch `geant4.10.5` contains the same container as our `main` but with a more recent version of Geant4:
-
-```diff
-$ git diff geant4.10.5 main
-diff --git a/Dockerfile b/Dockerfile
-index 9627e00..0fb31e8 100644
---- a/Dockerfile
-+++ b/Dockerfile
-@@ -131,7 +131,7 @@ RUN mkdir xerces-c && cd xerces-c &&\
- #  - G4DIR set to path where Geant4 should be installed
- ###############################################################################
--ENV GEANT4=geant4-10.5-release
-+ENV GEANT4=LDMX.10.2.3_v0.4
- LABEL geant4.version="${GEANT4}"
-```
-
-And this is enough to have a new container on DockerHub with the Geant4 version 10.5 under the Docker tag `ldmx/dev:geant4.10.5`, so one would use this container by calling `ldmx pull dev geant4.10.5`

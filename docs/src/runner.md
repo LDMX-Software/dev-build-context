@@ -47,8 +47,7 @@ necessary to the workflow definition - allowing future LDMX collaborators to sto
 using self-hosted runners if they want or need to.
 
 ### Workflow Definition
-In the end, I needed to change the [workflow definition](../.github/workflows/ci.yml)
-in five ways.
+In the end, I needed to change the [workflow definition](https://github.com/LDMX-Software/dev-build-context/blob/main/.github/workflows/ci.yml) in five ways.
 
 1. `runs-on: self-hosted` - tell GitHub to use the registered self-hosted runners rather than their own
 2. `timeout-minutes: 43200` - increase job time limit to 30 days to allow for emulation build to complete
@@ -98,7 +97,7 @@ actor could fork this repository and
 - Repeat these steps for _each_ of the runners (isolating the runners from the host and each other)
   - We did attempt to have the runners share a VM and a layer cache, but this was
     causing issues when two jobs were trying to read from the same layer cache and one
-    was completing before the other [LDMX-Software/docker Issue #69](https://github.com/LDMX-Software/docker/issues/69)
+    was completing before the other [LDMX-Software/dev-build-context Issue #69](https://github.com/LDMX-Software/dev-build-context/issues/69)
 
 I'd like to emphasize how simple this procedure was.
 GitHub has put a good amount of effort into making Self-Hosted runners easy to connect,
