@@ -25,30 +25,11 @@ We have settled into a relatively simple syntax for the packages in the Dockerfi
 and thus I've been able to write an `awk` script that can parse the Dockerfile
 and list the packages we install from the ubuntu repositories.
 ```awk
-BEGIN {
-  in_install=0;
-}
-{
-  # check if this line is in an install command
-  if (in_install && NF > 0) {
-    # print out all entires on line except the line continuation backslash
-    for (i=1; i <= NF; i++) {
-      if ($i != "\\") {
-        print $i;
-      }
-    }
-  }
-  # update for next lines if we are opening an install command or closing
-  if ($0 ~ /^RUN install-ubuntu-packages.*$/) {
-    in_install=1;
-  } else if (NF == 0 || $1 == "RUN" && $2 != "install-ubuntu-packages") {
-    in_install=0;
-  }
-}
+{{ #include get-ubuntu-packages.awk }}
 ```
-which can be run like
+which is stored in `docs/src` and can be run like
 ```
-awk -f get-ubuntu-packages.awk Dockerfile
+awk -f docs/src/get-ubuntu-packages.awk Dockerfile
 ```
 ~~~
 
