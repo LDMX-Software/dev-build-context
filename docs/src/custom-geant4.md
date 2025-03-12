@@ -9,7 +9,7 @@ with whatever code modifications applied, with whatever build instructions you c
 
 ~~~admonish warning title="Confirm Image Version"
 Make sure you have an image that is at least v4.2.0.
-You can check your version of the image by [inspecting the image labels](runtime-config.md#determining-an-images-version)
+You can check your version of the image by [inspecting the image labels](image-version.md).
 ~~~
 
 ### Building Your Geant4
@@ -20,13 +20,10 @@ You can only run this custom build of Geant4 with whatever image you are buildin
 ```
 
 ``` shell
-cd ${LDMX_BASE}
+cd path/to/ldmx # directory that contains ldmx-sw
 git clone git@github.com:LDMX-Software/geant4.git # or could be mainline Geant4 or an unpacked tar-ball
-cd geant4
-mkdir build
-cd build
-ldmx cmake <cmake-options> ..
-ldmx make install
+denv cmake -B geant4/build -S geant4 <cmake-options>
+denv cmake --build geant4/build --target install
 ```
 Now building Geant4 from source has a lot of configuration options that can be used to customize how it is built.
 Below are a few that are highlighted for how we use containers and their interaction with the Geant4 build.
