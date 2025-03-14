@@ -18,41 +18,12 @@ RUN chmod +x /usr/local/bin/install-ubuntu-packages
 # Ongoing documentation for packages used is in docs/ubuntu-packages.md
 # Basic OS/System tools
 RUN install-ubuntu-packages \
-    autoconf \
-    automake \
     binutils \
     cmake \
-    curl\
     gcc g++ gfortran \
     locales \
     make \
     wget
-
-# Packages necessary for Distrobox support
-RUN install-ubuntu-packages \
-    apt-utils \
-    bc \
-    dialog \
-    diffutils \
-    findutils \
-    fish \
-    gnupg2 \
-    less \
-    libnss-myhostname \
-    libvte-2.9[0-9]-common \
-    libvte-common \
-    lsof \
-    ncurses-base \
-    passwd \
-    pinentry-curses \
-    procps \
-    sudo \
-    time \
-    util-linux \
-    zsh \
-    libx11-dev \
-    libxmu-dev \
-    && rm -rf /var/lib/apt/lists/*
 
 # Basic python support, necessary for the build steps.
 #
@@ -167,7 +138,7 @@ RUN install-ubuntu-packages \
     libz-dev \
     libzstd-dev \
     srm-ifce-dev \
-    libgsl-dev # Necessary for GENIE
+    libgsl-dev
 
 ENV ROOT_VERSION="6.34.04"
 LABEL root.version=${ROOT_VERSION}
@@ -195,7 +166,8 @@ RUN mkdir src &&\
     rm -rf build src &&\
     ldconfig
 ENV ROOTSYS=${__prefix}
-ENV PYTHONPATH=${ROOTSYS}/lib:${PYTHONPATH}
+# first instance of PYTHONPATH, so no appending
+ENV PYTHONPATH=${ROOTSYS}/lib
 ENV CLING_STANDARD_PCH=none
 
 ###############################################################################
@@ -268,7 +240,6 @@ RUN mkdir src &&\
 
 ###############################################################################
 # Install HEPMC for use as in interface with GENIE
-#
 ###############################################################################
 ENV HEPMC3=3.3.0
 LABEL hepmc3.version="${HEPMC3}"
@@ -318,8 +289,7 @@ RUN mkdir src &&\
 # Note that libgsl-dev needs to be available already when building ROOT
 # so that the MathMore target can be build which is used by GENIE
 RUN install-ubuntu-packages \
-    liblog4cpp5-dev \
-    libtool
+    liblog4cpp5-dev
 
 LABEL genie.version=3.04.02
 ENV GENIE_VERSION=3_04_02-ldmx
@@ -360,7 +330,7 @@ RUN mkdir -p ${GENIE_REWEIGHT} &&\
 ###############################################################################
 # Catch2
 ###############################################################################
-ENV CATCH2_VERSION="3.3.1"
+ENV CATCH2_VERSION="3.8.0"
 LABEL catch2.version=${CATCH2_VERSION}
 RUN mkdir -p src &&\
     ${__wget} https://github.com/catchorg/Catch2/archive/refs/tags/v${CATCH2_VERSION}.tar.gz |\
@@ -415,6 +385,28 @@ RUN set -x ;\
     install -D -m 0644 -t ${__prefix}/include src/include/* &&\
     rm -rf src
 
+# Dependencies for LDMX-sw and/or the container environment
+RUN install-ubuntu-packages \
+    ca-certificates \
+    clang-format \
+    libboost-all-dev \
+    libssl-dev
+
+###############################################################################
+# Acts
+###############################################################################
+ENV ACTS_VERSION="36.0.0"
+LABEL acts.version=${ACTS_VERSION}
+RUN mkdir -p src &&\
+    ${__wget} https://github.com/acts-project/acts/archive/refs/tags/v${ACTS_VERSION}.tar.gz |\
+      ${__untar} &&\
+    cmake \
+      -DCMAKE_CXX_STANDARD=20 \
+      -B src/build \
+      -S src &&\
+    cmake --build src/build --target install &&\
+    rm -rf src
+
 ###############################################################################
 # Generate the linker cache
 #    This should go AFTER all compiled dependencies so that the ld cache 
@@ -431,12 +423,6 @@ RUN ldconfig -v
 COPY ./python_packages.txt /etc/python_packages.txt
 RUN python3 -m pip install --no-cache-dir --break-system-packages --requirement /etc/python_packages.txt
 
-# Dependencies for LDMX-sw and/or the container environment
-RUN install-ubuntu-packages \
-    ca-certificates \
-    clang-format \
-    libboost-all-dev \
-    libssl-dev
 
 # Optional tools and developer utilities
 #
