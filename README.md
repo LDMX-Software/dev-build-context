@@ -50,7 +50,8 @@ Software Package | Version | Construction Process
 [HEPMC3](https://hepmc.web.cern.ch) | 3.3.0 | Built from source
 [GENIE](http://www.genie-mc.org/) Generator | [3.02.02-ldmx](https://github.com/wesketchum/Generator/releases/tag/R-3_04_02-ldmx) | Built from source
 [GENIE](http://www.genie-mc.org/) Reweight | 1.04.00 | Built from Source
-[Catch2](https://github.com/catchorg/Catch2) | 3.3.1 | Built from source
+[Catch2](https://github.com/catchorg/Catch2) | 3.8.0 | Built from source
+[Acts](https://acts.readthedocs.io/en/v36.0.0/) | 36.0.0 | Built from source
 [ONNX Runtime](https://github.com/microsoft/onnxruntime) | 1.15.0 | Download pre-built binaries
 
 A detailed list of all packages installed from ubuntu repositories is given
