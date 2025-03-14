@@ -48,7 +48,7 @@ Software Package | Version | Construction Process
 [Geant4](https://geant4.web.cern.ch/) | [LDMX.10.2.3\_v0.6](https://github.com/LDMX-Software/geant4/tree/LDMX.10.2.3_v0.6) | Built from source
 [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) | 3.4.0 | Built from source
 [HEPMC3](https://hepmc.web.cern.ch) | 3.3.0 | Built from source
-[GENIE](http://www.genie-mc.org/) Generator | [3.02.02-ldmx](https://github.com/wesketchum/Generator/releases/tag/R-3_04_02-ldmx) | Built from source
+[GENIE](http://www.genie-mc.org/) Generator | [3.04.02-ldmx](https://github.com/wesketchum/Generator/releases/tag/R-3_04_02-ldmx) | Built from source
 [GENIE](http://www.genie-mc.org/) Reweight | 1.04.00 | Built from Source
 [Catch2](https://github.com/catchorg/Catch2) | 3.8.0 | Built from source
 [Acts](https://acts.readthedocs.io/en/v36.0.0/) | 36.0.0 | Built from source
