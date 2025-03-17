@@ -70,6 +70,7 @@ libxmu-dev | low-level window management (ROOT GUI)
 libxpm-dev | low-level window management (ROOT GUI)
 libz-dev | Data compression in ROOT serialization
 libzstd-dev | Data compression in ROOT serialization
+nlohmann-json3-dev | JSON reading/writing in ROOT and ldmx-sw
 srm-ifce-dev | [srm-ifce](https://github.com/cern-fts/srm-ifce) client side access of distributed storage within ROOT
 libgsl-dev | GNU Scientific Library for numerical calculations in ROOT MathMore (needed for GENIE)
 liblog4cpp5-dev | C++ Logging Library used in GENIE

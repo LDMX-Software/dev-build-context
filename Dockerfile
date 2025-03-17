@@ -137,6 +137,7 @@ RUN install-ubuntu-packages \
     libxpm-dev \
     libz-dev \
     libzstd-dev \
+    nlohmann-json3-dev \
     srm-ifce-dev \
     libgsl-dev
 
