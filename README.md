@@ -40,10 +40,11 @@ Software Package | Version | Construction Process
 [Ubuntu Server](https://ubuntu.com/) | 24.04 | Base Image
 [Python](https://www.python.org/) | 3.12.3 | From Ubuntu Repos
 [cmake](https://cmake.org/) | 3.28.3 | From Ubuntu Repos
-[Boost](https://www.boost.org/doc/libs/1_74_0/) | 1.83.0 | From Ubuntu Repos
+[Boost](https://www.boost.org/doc/libs/1_83_0/) | 1.83.0 | From Ubuntu Repos
 [XercesC](http://xerces.apache.org/xerces-c/) | 3.3.0 | Built from source
 [LHAPDF](https://www.lhapdf.org/) | 6.5.5 | Built from source
 [Pythia8](https://pythia.org/) | 8.313 | Built from source
+[nlohmann/json](https://json.nlohmann.me/) | 3.11.3 | From Ubuntu Repos
 [ROOT](https://root.cern.ch/) | 6.34.04 | Built from source
 [Geant4](https://geant4.web.cern.ch/) | [LDMX.10.2.3\_v0.6](https://github.com/LDMX-Software/geant4/tree/LDMX.10.2.3_v0.6) | Built from source
 [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) | 3.4.0 | Built from source
