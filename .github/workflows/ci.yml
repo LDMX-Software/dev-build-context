@@ -169,7 +169,7 @@ jobs:
           type=semver,pattern={{major}}.{{minor}}
     -
       name: Install just
-      uses: extractions/setup-just@v2
+      uses: extractions/setup-just@v3
       with:
         just-version: 1.26.0
     - 
