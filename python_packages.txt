@@ -1,29 +1,16 @@
-contourpy
-cycler
-Cython
-fonttools
-joblib
-kiwisolver
-llvmlite
-matplotlib
-mplhep
-mplhep-data
-numba
-numpy
-packaging
-pandas
-Pillow
-pip
-pyparsing
-python-dateutil
-pytz
-scikit-learn
-scipy
-setuptools
-six
-threadpoolctl
-uhi
-uproot
-wheel
-xgboost
+# meta-package containing HEP tools like mplhep, uproot, awkward, etc...
+# which also brings in matplotlib and many others
+scikit-hep==2025.1.1
+# HEPMC IO in Python, not included in scikit-hep for some reason
 pyhepmc
+# update packages related to python packaging
+pip
+wheel
+setuptools
+# write C extensions for Python
+Cython
+# pre-compile python functions in a numpy-aware way
+numba
+# ML training/testing libraries
+scikit-learn
+xgboost
