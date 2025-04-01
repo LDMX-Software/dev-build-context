@@ -38,6 +38,7 @@ which provides support for Docker, Podman, and Apptainer.
 Software Package | Version | Construction Process
 ---|---|---
 [Ubuntu Server](https://ubuntu.com/) | 24.04 | Base Image
+[GCC](https://gcc.gnu.org/) | 13.3.0 | From Ubuntu Repos
 [Python](https://www.python.org/) | 3.12.3 | From Ubuntu Repos
 [cmake](https://cmake.org/) | 3.28.3 | From Ubuntu Repos
 [Boost](https://www.boost.org/doc/libs/1_83_0/) | 1.83.0 | From Ubuntu Repos
@@ -54,6 +55,7 @@ Software Package | Version | Construction Process
 [Catch2](https://github.com/catchorg/Catch2) | 3.8.0 | Built from source
 [Acts](https://acts.readthedocs.io/en/v36.0.0/) | 36.0.0 | Built from source
 [ONNX Runtime](https://github.com/microsoft/onnxruntime) | 1.15.0 | Download pre-built binaries
+[Clang](https://clang.llvm.org/) | 18.1.3 | From Ubuntu Repos
 
 A detailed list of all packages installed from ubuntu repositories is given
 [here](https://ldmx-software.github.io/dev-build-context/ubuntu-packages.html),
