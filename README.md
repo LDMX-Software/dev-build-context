@@ -59,6 +59,7 @@ Software Package | Version | Construction Process
 
 More detailed documentation of the available software is online.
 - [Ubuntu Packages](https://ldmx-software.github.io/dev-build-context/ubuntu-packages.html)
+- [Python Packages](https://ldmx-software.github.io/dev-build-context/python-packages.html)
 and documentation on the workflow and runner used to build the image is
 [here](https://ldmx-software.github.io/dev-build-context/runner.html).
 
