@@ -60,6 +60,7 @@ Software Package | Version | Construction Process
 More detailed documentation of the available software is online.
 - [Ubuntu Packages](https://ldmx-software.github.io/dev-build-context/ubuntu-packages.html)
 - [Python Packages](https://ldmx-software.github.io/dev-build-context/python-packages.html)
+
 and documentation on the workflow and runner used to build the image is
 [here](https://ldmx-software.github.io/dev-build-context/runner.html).
 
@@ -67,5 +68,5 @@ and documentation on the workflow and runner used to build the image is
 - SSL Certificates that will be trusted by container are in the `certs` directory
 
 ## Other Packages
-If you would like another package included in the development container, please open an issue in this repository.
+If you would like another package included in the development container, please open an issue in this repository for further discussion.
 
