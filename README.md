@@ -57,20 +57,11 @@ Software Package | Version | Construction Process
 [ONNX Runtime](https://github.com/microsoft/onnxruntime) | 1.15.0 | Download pre-built binaries
 [Clang](https://clang.llvm.org/) | 18.1.3 | From Ubuntu Repos
 
-A detailed list of all packages installed from ubuntu repositories is given
-[here](https://ldmx-software.github.io/dev-build-context/ubuntu-packages.html),
+More detailed documentation of the available software is online.
+- [Ubuntu Packages](https://ldmx-software.github.io/dev-build-context/ubuntu-packages.html)
+- [Python Packages](https://ldmx-software.github.io/dev-build-context/python-packages.html)
 and documentation on the workflow and runner used to build the image is
 [here](https://ldmx-software.github.io/dev-build-context/runner.html).
-
-### Python Packages for Analyses
-Installed in Python 3.
-- pip 
-- Cython
-- numpy
-- uproot
-- matplotlib
-- xgboost
-- sklearn
 
 ### Other Configuration
 - SSL Certificates that will be trusted by container are in the `certs` directory

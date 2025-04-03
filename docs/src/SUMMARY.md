@@ -11,6 +11,7 @@
 # Developing
 - [Contributing](contributing.md)
 - [Ubuntu Packages](ubuntu-packages.md)
+- [Python Packages](python-packages.md)
 - [Runtime Configuration](runtime-config.md)
 - [GitHub Workflows](workflows.md)
   - [Legacy Interop](interop.md)
