@@ -163,10 +163,10 @@ jobs:
       with:
         images: ${{ env.REGISTRY_IMAGE }}
         tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern=v{{version}}
-            type=sha,format=short
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern=v{{version}}
+          type=sha,format=short
     -
       name: Install just
       uses: extractions/setup-just@v3
