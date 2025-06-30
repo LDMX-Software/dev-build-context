@@ -46,7 +46,7 @@ Software Package | Version | Construction Process
 [LHAPDF](https://www.lhapdf.org/) | 6.5.5 | Built from source
 [Pythia8](https://pythia.org/) | 8.313 | Built from source
 [nlohmann/json](https://json.nlohmann.me/) | 3.11.3 | From Ubuntu Repos
-[ROOT](https://root.cern.ch/) | 6.34.04 | Built from source
+[ROOT](https://root.cern.ch/) | 6.34.10 | Built from source
 [Geant4](https://geant4.web.cern.ch/) | [LDMX.10.2.3\_v0.6](https://github.com/LDMX-Software/geant4/tree/LDMX.10.2.3_v0.6) | Built from source
 [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) | 3.4.0 | Built from source
 [HEPMC3](https://hepmc.web.cern.ch) | 3.3.0 | Built from source
