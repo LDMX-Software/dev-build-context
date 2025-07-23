@@ -36,3 +36,9 @@ we just need to build ldmx-sw with specific `cmake` options pointing it to our n
 just configure -DActs_DIR=/path/to/ldmx/acts/install
 just build
 ```
+Some other CMake options may be required depending on your version of ACTS and the version of the dev
+image you are using. Below are some options that we've come across while testing. They can be set on the
+the command line when running `just configure` with `-D<name>=<value>` like `Acts_DIR` above.
+- `CMAKE_FIND_DEBUG_MODE`: may need to be turned `OFF`
+- `nlohmann_json_DIR`: may need to be directed to the specific version that was installed with ACTS
+  - e.g. `-Dnlohmann_json_DIR=/path/to/ldmx/acts/install/lib/cmake/nlohmann_json/`
