@@ -39,4 +39,8 @@ variable `apptainer` defines at runtime.
 ```
 denv printenv APPTAINER_CONTAINER
 ```
+Putting all this together, we can find the image version label with the following one-liner.
+```
+apptainer inspect $(denv printenv APPTAINER_CONTAINER) | grep org.opencontainers.image.version
+```
 ~~~
