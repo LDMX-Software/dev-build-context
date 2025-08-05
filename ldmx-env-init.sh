@@ -5,24 +5,37 @@
 #     or it is located at LDMX_BASE/ldmx-sw/install.
 ###############################################################################
 
-# add ldmx-sw and ldmx-analysis installs to the various paths
 # LDMX_SW_INSTALL is defined when building the production image or users
 # can use it to specify a non-normal install location
 if [ -z "${LDMX_SW_INSTALL+x}" ]; then
   if [ -z "${LDMX_BASE+x}" ]; then
-    printf "[ldmx-env-init.sh] WARNING: %s\n" \
-      "Neither LDMX_BASE nor LDMX_SW_INSTALL is defined." \
-      "At least one needs to be defined to ensure a working installation."
+    # LDMX_BASE not defined
+    if [ -f "${HOME}/CMakeLists.txt" ]; then
+      # HOME is ldmx-sw
+      export LDMX_SW_INSTALL="${HOME}/install"
+    elif [ -d "${HOME}/ldmx-sw" ]; then
+      # HOME is ldmx-sw's parent directory
+      export LDMX_SW_INSTALL="${HOME}/ldmx-sw/install"
+    else
+      # unable to auto-detect
+      printf "[ldmx-env-init.sh] WARNING: %s\n" \
+        "LDMX_SW_INSTALL is not defined and I wasn't able to deduce the location relative to ${HOME}." \
+        "You may not be able to run ldmx-sw programs in this environment."
+    fi
+  else
+    # LDMX_BASE defined
+    export LDMX_SW_INSTALL="${LDMX_BASE}/ldmx-sw/install"
   fi
-  export LDMX_SW_INSTALL="${LDMX_BASE}/ldmx-sw/install"
 fi
-export LD_LIBRARY_PATH="${LDMX_SW_INSTALL}/lib:${LD_LIBRARY_PATH}"
-export PYTHONPATH="${LDMX_SW_INSTALL}/python:${LDMX_SW_INSTALL}/lib:${PYTHONPATH}"
-export PATH="${LDMX_SW_INSTALL}/bin:${PATH}"
 
-#add what we need for GENIE 
-export LD_LIBRARY_PATH="${GENIE}/lib:${GENIE_REWEIGHT}/lib:/usr/local/pythia6:${LD_LIBRARY_PATH}"
-export PATH="${GENIE}/bin:${GENIE_REWEIGHT}/bin:${PATH}"
+export CMAKE_PREFIX_PATH="/usr/local/"
+
+if [ -n "${LDMX_SW_INSTALL+x}" ]; then
+  export LD_LIBRARY_PATH="${LDMX_SW_INSTALL}/lib:${LD_LIBRARY_PATH}"
+  export PYTHONPATH="${LDMX_SW_INSTALL}/python:${LDMX_SW_INSTALL}/lib:${PYTHONPATH}"
+  export PATH="${LDMX_SW_INSTALL}/bin:${PATH}"
+  export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH}:${LDMX_SW_INSTALL}"
+fi
 
 # Developer option: If a custom geant4 install is to be used, source the
 # environment script from that install
@@ -61,7 +74,7 @@ if [ -n "${LDMX_CUSTOM_GEANT4+x}" ]; then
     # shellcheck disable=SC1091
     . "${LDMX_CUSTOM_GEANT4}/bin/geant4.sh"
     # Prioritize the cmake config in the Geant4 installation over the container location (/usr/local)
-    export CMAKE_PREFIX_PATH="${LDMX_CUSTOM_GEANT4}/lib/cmake:/usr/local/:${CMAKE_PREFIX_PATH}"
+    export CMAKE_PREFIX_PATH="${LDMX_CUSTOM_GEANT4}/lib/cmake:${CMAKE_PREFIX_PATH}"
 
     # If no directory was found by the geant4.sh script and the user didn't
     # explicitly ask for a location (e.g. for a debug build):
@@ -70,7 +83,4 @@ if [ -n "${LDMX_CUSTOM_GEANT4+x}" ]; then
     if [ -z "${GEANT4_DATA_DIR+x}" ]; then
         export GEANT4_DATA_DIR="${G4DATADIR}"
     fi
-else
-    # Tell CMake to look for configuration files in the container location by default
-    export CMAKE_PREFIX_PATH="/usr/local/:${LDMX_SW_INSTALL}"
 fi

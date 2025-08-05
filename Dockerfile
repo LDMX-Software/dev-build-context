@@ -452,9 +452,5 @@ ENV PATH="${PATH}:${GENIE}/bin:${GENIE_REWEIGHT}/bin"
 # and make sure the default profile will call it as well
 COPY ./ldmx-env-init.sh /etc/
 RUN printf "%s\n" \
-      "# make sure LDMX_BASE is defined for ldmx-env-init.sh" \
-      "if [ -z \"\${LDMX_BASE+x}\" ]; then" \
-      "  export LDMX_BASE=\"\${HOME}\"" \
-      "fi" \
       ". /etc/ldmx-env-init.sh" \
     >> /etc/skel/.profile
