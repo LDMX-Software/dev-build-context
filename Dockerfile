@@ -442,6 +442,12 @@ RUN install-ubuntu-packages \
 COPY ./certs/ /usr/local/share/ca-certificates
 RUN update-ca-certificates
 
+# temporary change to make test build faster, remove before merge
+RUN echo "${GENIE}/lib" > /etc/ld.so.conf.d/genie.conf &&\
+    echo "${GENIE_REWEIGHT}/lib" > /etc/ld.so.conf.d/genie-reweight.conf &&\
+    ldconfig -v
+ENV PATH="${PATH}:${GENIE}/bin:${GENIE_REWEIGHT}/bin"
+
 # copy environment initialization script into container
 # and make sure the default profile will call it as well
 COPY ./ldmx-env-init.sh /etc/
