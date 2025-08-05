@@ -452,10 +452,3 @@ RUN printf "%s\n" \
       "fi" \
       ". /etc/ldmx-env-init.sh" \
     >> /etc/skel/.profile
-
-#run environment setup when docker container is launched and decide what to do from there
-#   will require the environment variable LDMX_BASE defined
-COPY ./entry.sh /etc/
-RUN chmod 755 /etc/entry.sh
-ENTRYPOINT ["/etc/entry.sh"]
-
