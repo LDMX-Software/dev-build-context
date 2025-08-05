@@ -316,7 +316,9 @@ RUN mkdir -p ${GENIE} &&\
       --with-hepmc3-inc=/usr/local/include \
     && \
     make -j$NPROC && \
-    make -j$NPROC install
+    make -j$NPROC install && \
+    echo "${GENIE}/lib" > /etc/ld.so.conf.d/genie.conf
+ENV PATH="${PATH}:${GENIE}/bin"
 
 ENV GENIE_REWEIGHT_VERSION=1_04_00
 ENV GENIE_REWEIGHT=/usr/local/src/GENIE/Reweight
@@ -326,7 +328,10 @@ RUN mkdir -p ${GENIE_REWEIGHT} &&\
     ${__untar_to} ${GENIE_REWEIGHT} &&\
     cd ${GENIE_REWEIGHT} &&\
     make -j$NPROC && \
-    make -j$NPROC install
+    make -j$NPROC install && \
+    echo "${GENIE_REWEIGHT}/lib" > /etc/ld.so.conf.d/genie-reweight.conf
+ENV PATH="${PATH}:${GENIE_REWEIGHT}/bin"
+
 
 ###############################################################################
 # Catch2
@@ -441,12 +446,6 @@ RUN install-ubuntu-packages \
 # add any ssl certificates to the container to trust
 COPY ./certs/ /usr/local/share/ca-certificates
 RUN update-ca-certificates
-
-# temporary change to make test build faster, remove before merge
-RUN echo "${GENIE}/lib" > /etc/ld.so.conf.d/genie.conf &&\
-    echo "${GENIE_REWEIGHT}/lib" > /etc/ld.so.conf.d/genie-reweight.conf &&\
-    ldconfig -v
-ENV PATH="${PATH}:${GENIE}/bin:${GENIE_REWEIGHT}/bin"
 
 # copy environment initialization script into container
 # and make sure the default profile will call it as well
