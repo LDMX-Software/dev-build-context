@@ -2,7 +2,7 @@
 # Environment initialization for LDMX SW container images
 #   Assumptions:
 #   - The installation location of ldmx-sw is defined in LDMX_SW_INSTALL
-#     or it is located at LDMX_BASE/ldmx-sw/install.
+#     or it is located at ${HOME}/ldmx-sw/install or ${HOME}/install.
 ###############################################################################
 
 # LDMX_SW_INSTALL is defined when building the production image or users
