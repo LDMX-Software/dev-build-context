@@ -28,8 +28,6 @@ if [ -z "${LDMX_SW_INSTALL+x}" ]; then
   fi
 fi
 
-export CMAKE_PREFIX_PATH="/usr/local/"
-
 if [ -n "${LDMX_SW_INSTALL+x}" ]; then
   export LD_LIBRARY_PATH="${LDMX_SW_INSTALL}/lib:${LD_LIBRARY_PATH}"
   export PYTHONPATH="${LDMX_SW_INSTALL}/python:${LDMX_SW_INSTALL}/lib:${PYTHONPATH}"

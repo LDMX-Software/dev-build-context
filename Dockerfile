@@ -449,7 +449,6 @@ RUN update-ca-certificates
 
 # copy environment initialization script into container
 # and make sure the default profile will call it as well
+ENV CMAKE_PREFIX_PATH=/usr/local
 COPY ./ldmx-env-init.sh /etc/
-RUN printf "%s\n" \
-      ". /etc/ldmx-env-init.sh" \
-    >> /etc/skel/.profile
+RUN printf "\n%s\n" ". /etc/ldmx-env-init.sh" >> /etc/skel/.profile
