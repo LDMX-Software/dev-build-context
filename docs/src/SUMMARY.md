@@ -3,10 +3,10 @@
 [Welcome](README.md)
 
 # Using
+- [Determing an Image's Version](image-version.md)
 - [Custom Geant4](custom-geant4.md)
 - [Custom Acts](custom-acts.md)
 - [Parallel Containers](parallel_containers.md)
-- [Determing an Image's Version](image-version.md)
 
 # Developing
 - [Contributing](contributing.md)

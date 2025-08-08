@@ -316,7 +316,9 @@ RUN mkdir -p ${GENIE} &&\
       --with-hepmc3-inc=/usr/local/include \
     && \
     make -j$NPROC && \
-    make -j$NPROC install
+    make -j$NPROC install && \
+    echo "${GENIE}/lib" > /etc/ld.so.conf.d/genie.conf
+ENV PATH="${PATH}:${GENIE}/bin"
 
 ENV GENIE_REWEIGHT_VERSION=1_04_00
 ENV GENIE_REWEIGHT=/usr/local/src/GENIE/Reweight
@@ -326,7 +328,10 @@ RUN mkdir -p ${GENIE_REWEIGHT} &&\
     ${__untar_to} ${GENIE_REWEIGHT} &&\
     cd ${GENIE_REWEIGHT} &&\
     make -j$NPROC && \
-    make -j$NPROC install
+    make -j$NPROC install && \
+    echo "${GENIE_REWEIGHT}/lib" > /etc/ld.so.conf.d/genie-reweight.conf
+ENV PATH="${PATH}:${GENIE_REWEIGHT}/bin"
+
 
 ###############################################################################
 # Catch2
@@ -444,18 +449,6 @@ RUN update-ca-certificates
 
 # copy environment initialization script into container
 # and make sure the default profile will call it as well
+ENV CMAKE_PREFIX_PATH=/usr/local
 COPY ./ldmx-env-init.sh /etc/
-RUN printf "%s\n" \
-      "# make sure LDMX_BASE is defined for ldmx-env-init.sh" \
-      "if [ -z \"\${LDMX_BASE+x}\" ]; then" \
-      "  export LDMX_BASE=\"\${HOME}\"" \
-      "fi" \
-      ". /etc/ldmx-env-init.sh" \
-    >> /etc/skel/.profile
-
-#run environment setup when docker container is launched and decide what to do from there
-#   will require the environment variable LDMX_BASE defined
-COPY ./entry.sh /etc/
-RUN chmod 755 /etc/entry.sh
-ENTRYPOINT ["/etc/entry.sh"]
-
+RUN printf "\n%s\n" ". /etc/ldmx-env-init.sh" >> /etc/skel/.profile
