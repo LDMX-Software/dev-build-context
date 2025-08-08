@@ -8,7 +8,7 @@ Make sure you have an image that is at least v4.2.0.
 You can check your version of the image by [inspecting the image labels](image-version.md).
 ~~~
 
-### Building Your Geant4
+## Building Your Geant4
 You can build your Geant4 in a similar manner as ldmx-sw. It does take much longer to compile than ldmx-sw since it is larger, so be sure to leave enough time for it.
 
 ```admonish warning title="Remember"
@@ -16,7 +16,7 @@ You can only run this custom build of Geant4 with whatever image you are buildin
 ```
 
 ``` shell
-cd path/to/ldmx # directory that contains ldmx-sw
+cd path/to/ldmx/ldmx-sw # ldmx-sw you want to build with custom geant4
 git clone git@github.com:LDMX-Software/geant4.git # or could be mainline Geant4 or an unpacked tar-ball
 denv cmake -B geant4/build -S geant4 <cmake-options>
 denv cmake --build geant4/build --target install
@@ -24,19 +24,20 @@ denv cmake --build geant4/build --target install
 Now building Geant4 from source has a lot of configuration options that can be used to customize how it is built.
 Below are a few that are highlighted for how we use containers and their interaction with the Geant4 build.
 
-- `CMAKE_INSTALL_PREFIX`: This should be set to a path accessible from the container so that the programs within the container can read from and write to this directory. If the geant4 build directory is within `LDMX_BASE` (like it is above), then you could do something like `-DCMAKE_INSTALL_PREFIX=../install` when you run `ldmx cmake` within the build directory.
+- `CMAKE_INSTALL_PREFIX`: This should be set to a path accessible from the container so that the programs within the container can read from and write to this directory. If the geant4 build directory is within ldmx-sw (like it is above), then you could do something like `-DCMAKE_INSTALL_PREFIX=geant4/install` when you run `denv cmake ...`
+  - If you are keeping Geant4 outside of ldmx-sw, then you may need to mount it into the ldmx-sw container image with `denv config mounts` if it is not already within a mounted directory.
 - `GEANT4_INSTALL_DATADIR`: If you are building a version of Geant4 that has the same data files as the Geant4 version built into the container image, then you can tell the Geant4 build to use those data files with this option, saving build time and disk space. This is helpful if (for example) you are just re-building the same version of Geant4 but in Debug mode. You can see where the Geant4 data is within the container with `denv printenv G4DATADIR` and then use this value `-DGEANT4_INSTALL_DATADIR=/usr/local/share/geant4/data`.
 
-The following are the build options used when setting up the container and are likely what you want to get started 
+The following are the build options used when setting up the image and are likely what you want to get started 
 - `-DGEANT4_USE_GDML=ON` Enable reading geometries with the GDML markup language which is used in LDMX-sw for all our geometries 
 - `-DGEANT4_INSTALL_EXAMPLES=OFF` Don't install the Geant4 example applications (just to save space and compilation time)
 - `-DGEANT4_USE_OPENGL_X11=ON`  enable an X11-based GUI for inspecting geometries
 - `-DGEANT4_MULTITHREADED=OFF` If you are building a version of Geant4 that is multithreaded by default, you will want to disable it with. The dynamic loading used in LDMX-sw will often not work with a multithreaded version of Geant4 
 
-#### Concerns when building different versions of Geant4 than 10.2.3
+### Concerns when building different versions of Geant4 than 10.2.3
 
-For most use cases you will be building a modified version of the same release of Geant4 that is used in the container (10.2.3). It is also possible to build and use later versions of Geant4 although this should be done with care. In particular 
-- Different Geant4 release versions will require that you rebuild LDMX-sw for use with that version, it will not be sufficient to set the `LDMX_CUSTOM_GEANT4` environment variable and pick up the shared libraries therein
+For most use cases you will be building a modified version of the same release of Geant4 that is used in the image (10.2.3). It is also possible to build and use later versions of Geant4 although this should be done with care. In particular 
+- Different Geant4 release versions will require that you rebuild LDMX-sw for use with that version, it will not be sufficient to just source the custom Geant4's environment and pick up the shared libraries therein
 - Recent versions of Geant4 group the electromagnetic processes for each particle into a so-called general process for performance reasons. This means that many features in LDMX-sw that rely on the exact names of processes in Geant4 will not work. You can disable this by inserting something like the following in [RunManager::setupPhysics()](https://github.com/LDMX-Software/SimCore/blob/20d9bcb6d2bad2b99255cf32c1b3f099b26752b0/src/SimCore/RunManager.cxx#L60)
 ```C++ 
 // Make sure to include G4EmParameters if needed
@@ -45,9 +46,8 @@ auto electromagneticParameters {G4EmParameters::Instance()};
 // i.e. G4GammaGeneralProcess and G4ElectronGeneralProcess
 electromagneticParameters->SetGeneralProcessActive(false);
 ```
-- Geant4 relies on being able to locate a set of datasets when running. For builds of 10.2.3, the ones that are present in the container will suffice but other versions may need different versions of these datasets. If you run into issues with this, use `ldmx env` and check that the following environment variables are pointing to the right location 
+- Geant4 relies on being able to locate a set of datasets when running. For builds of 10.2.3, the ones that are present in the container will suffice but other versions may need different versions of these datasets. If you run into issues with this, use `denv printenv` and check that the following environment variables are pointing to the right location 
 - `GEANT4_DATA_DIR` should point to `$LDMX_CUSTOM_GEANT4/share/Geant4/data`
-  - You can define the `LDMX_CUSTOM_GEANT4_DATA_DIR` environment variable in the container environment to manually point it to a custom location
 - The following environment variables should either be unset or point to the correct location in `GEANT4_DATA_DIR`
   - `G4NEUTRONHPDATA` 
   - `G4LEDATA`
@@ -215,7 +215,7 @@ own downloaded copies of the datasets.
 ## Running with your Geant4
 The way we use different versions of Geant4 has changed over the years, so it depends on which version of the image you are using.
 
-### >=5.1.0
+### >=5.1.1
 Since we are using `denv` to interact with the development image, you now have access to a local file that
 can customize your development environment within the container image.
 This file is `.profile` located within the container's home directory.
@@ -226,7 +226,7 @@ denv printenv HOME
 from the location where you want to use the custom Geant4.
 The path output by this command is where the `.profile` is that you will edit.
 
-~~~admonish warning title="System `.profile`", collapsible=true
+~~~admonish warning  title="System `.profile`"  collapsible=true
 The `.profile` file is a file that exists in many normal Linux (and MacOS) systems.
 I am just pointing this out because if you edit your system one (located at `~/.profile`)
 instead of the one that is located within the denv workspace, you will not get the changes
@@ -291,8 +291,18 @@ cd build && denv ccmake .
 ```
 You should see `Geant4_DIR` set to the path of your custom Geant4 instead of some path in `/usr/local/...`.
 
+~~~admonish note title="Returning to Normal" collapsible=true
+If you want to return to the normal environment, you can comment-out or remove your `.profile` changes
+at the bottom of that file.
 
-### <5.1.0,>=4.2.0
+A nuclear option is to have the image re-copy of new `.profile` by removing the `.profile` file and a `denv`
+internal file signalling that the profile has already been copied.
+```
+rm .profile .denv/skel-init
+```
+~~~
+
+### <5.1.1,>=4.2.0
 With release 4.2.0 of the ldmx/dev image, the entrypoint script now checks the environment variable `LDMX_CUSTOM_GEANT4` for a path to a local installation of Geant4.
 This allows the user to override the Geant4 that is within the image with one that available locally. In this way, you can choose whichever version of Geant4 you want,
 with whatever code modifications applied, with whatever build instructions you choose.
