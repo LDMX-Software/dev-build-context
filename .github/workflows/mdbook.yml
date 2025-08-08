@@ -47,7 +47,12 @@ jobs:
         uses: lycheeverse/lychee-action@v2
         with:
           fail: true
-          args: ./docs/book
+          args: >-
+            --verbose
+            --no-progress
+            --config docs/lychee.toml
+            --root-dir "${{ github.workspace }}/docs/book"
+            ./docs/book
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
