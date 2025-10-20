@@ -146,6 +146,7 @@ LABEL root.version=${ROOT_VERSION}
 RUN mkdir src &&\
     ${__wget} https://root.cern/download/root_v${ROOT_VERSION}.source.tar.gz |\
      ${__untar} &&\
+    sed -i '13i list(APPEND TREEPLAYER_EXTRA_DEPENDENCIES MultiProc)' src/tree/treeplayer/CMakeLists.txt &&\
     cmake \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_CXX_STANDARD=20 \
