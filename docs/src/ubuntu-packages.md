@@ -42,6 +42,7 @@ g++ | GNU C++ Compiler
 gfortran | GNU Fortran Compiler
 locales | Configuration of TPython and other python packages
 make | Building system for dependencies and ldmx-sw
+parallel | [GNU Parallel](https://www.gnu.org/software/parallel/man.html) for multi-processing ldmx-sw
 wget | Download source files for dependencies and ldmx-sw Conditions
 python3-dev | ROOT TPython and ldmx-sw configuration system
 python3-numpy | ROOT TPython requires numpy and downstream analysis packages

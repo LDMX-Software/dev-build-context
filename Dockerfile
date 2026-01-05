@@ -23,6 +23,7 @@ RUN install-ubuntu-packages \
     gcc g++ gfortran \
     locales \
     make \
+    parallel \
     wget
 
 # Basic python support, necessary for the build steps.
