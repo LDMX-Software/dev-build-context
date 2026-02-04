@@ -428,8 +428,7 @@ RUN ldconfig -v
 # Extra python packages for analysis
 ###############################################################################
 COPY ./python_packages.txt /etc/python_packages.txt
-RUN python3 -m pip install --no-cache-dir --break-system-packages --requirement /etc/python_packages.txt
-
+RUN python3 -m pip install --no-cache-dir --break-system-packages --ignore-installed --requirement /etc/python_packages.txt
 
 # Optional tools and developer utilities
 #
