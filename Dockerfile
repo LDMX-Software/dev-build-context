@@ -21,6 +21,7 @@ RUN install-ubuntu-packages \
     binutils \
     cmake \
     gcc g++ gfortran \
+    libcurl4-openssl-dev \
     locales \
     make \
     parallel \
