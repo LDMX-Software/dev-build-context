@@ -36,6 +36,7 @@ awk -f docs/src/get-ubuntu-packages.awk Dockerfile
 Package | Reason
 ---|---
 binutils | Adding PPA and linking libraries
+ccache | Improve compilation of ldmx-sw 
 cmake | Configuration of build system
 gcc | GNU C Compiler
 g++ | GNU C++ Compiler
