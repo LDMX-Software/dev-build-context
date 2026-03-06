@@ -19,6 +19,7 @@ RUN chmod +x /usr/local/bin/install-ubuntu-packages
 # Basic OS/System tools
 RUN install-ubuntu-packages \
     binutils \
+    ccache \
     cmake \
     gcc g++ gfortran \
     locales \
