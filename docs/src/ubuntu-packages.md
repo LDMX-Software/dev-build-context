@@ -51,6 +51,7 @@ python3-tk | matplotlib requires python-tk for some plotting
 rsync | necessary to build Pythia8 
 fonts-freefont-ttf | fonts for plots with ROOT
 libafterimage-dev | ROOT GUI needs these for common shapes
+libcurl4-openssl-dev | Used curl for accessing Conditions within ldmx-sw
 libfftw3-dev | Discrete fourier transform in ROOT
 libfreetype6-dev | fonts for plots with ROOT
 libftgl-dev | Rendering fonts in OpenGL
