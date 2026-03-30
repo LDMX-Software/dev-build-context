@@ -38,7 +38,7 @@ jobs:
         run: ./.github/install-mdbook
       - name: Setup Pages
         id: pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Build with mdBook
         run: mdbook build
         working-directory: docs
