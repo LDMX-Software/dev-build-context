@@ -11,6 +11,18 @@ Instead, it is recommended for you to craft your own environment which is lighte
 it easier to reproduce and move around clusters) and more nimble (allowing you to upgrade
 packages if you want to).
 
+There are many programs satisfying this goal of managing a Python environment that
+can exist on your system without needing to run a container image. These can be
+faster than launching a container image but may not give you access to as fixed
+of an environment since many of the tools rely on system-installed Python.
+One tool that I (Tom) would suggest is [uv](https://docs.astral.sh/uv/).
+It handles the Python version as well as the versions of the packages you are using.
+You can "lock" these into a `uv.lock` file (committed to your analysis repository),
+so that you identical Python environments when switching between machines (or
+collaborating with other people).
+
+Below, I've outlined how to do a similar procedure using `denv` instead of `uv`
+since I'm assuming you've already installed `denv` for use with ldmx-sw.
 ```
 cd my-analysis
 denv init python:3.12 # choose python version
