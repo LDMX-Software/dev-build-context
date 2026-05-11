@@ -144,7 +144,7 @@ RUN install-ubuntu-packages \
     srm-ifce-dev \
     libgsl-dev
 
-ENV ROOT_VERSION="6.34.10"
+ENV ROOT_VERSION="6.36.12"
 LABEL root.version=${ROOT_VERSION}
 RUN mkdir src &&\
     ${__wget} https://root.cern/download/root_v${ROOT_VERSION}.source.tar.gz |\
@@ -162,8 +162,8 @@ RUN mkdir src &&\
       -Dopengl=ON \
       -Dpyroot=ON \
       -Dxrootd=OFF \
-      -Dmathmore=ON \   
-      -Dpythia8=ON \    
+      -Dmathmore=ON \
+      -Dpythia8=ON \
       -B build \
       -S src \
     && cmake --build build --target install -j$NPROC &&\
