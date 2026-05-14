@@ -400,6 +400,7 @@ RUN install-ubuntu-packages \
     ca-certificates \
     clang-format \
     libboost-all-dev \
+    libcurl4-openssl-dev \
     libssl-dev
 
 ###############################################################################
