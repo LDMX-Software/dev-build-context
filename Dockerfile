@@ -1,6 +1,6 @@
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 LABEL maintainer="Tom Eichlersmith <eichl008@umn.edu>, Tamas Almos Vami <Tamas.Almos.Vami@cern.ch>"
-LABEL ubuntu.version="24.04"
+LABEL ubuntu.version="26.04"
 
 ARG NPROC=1
 
@@ -19,6 +19,7 @@ RUN chmod +x /usr/local/bin/install-ubuntu-packages
 # Basic OS/System tools
 RUN install-ubuntu-packages \
     binutils \
+    ccache \
     cmake \
     gcc g++ gfortran \
     locales \
@@ -117,7 +118,6 @@ RUN mkdir src && \
 
 RUN install-ubuntu-packages \
     fonts-freefont-ttf \
-    libafterimage-dev \
     libfftw3-dev \
     libfreetype6-dev \
     libftgl-dev \
@@ -139,10 +139,10 @@ RUN install-ubuntu-packages \
     libz-dev \
     libzstd-dev \
     nlohmann-json3-dev \
-    srm-ifce-dev \
-    libgsl-dev
+    libgsl-dev \
+    libcrypt-dev
 
-ENV ROOT_VERSION="6.34.10"
+ENV ROOT_VERSION="6.38.04"
 LABEL root.version=${ROOT_VERSION}
 RUN mkdir src &&\
     ${__wget} https://root.cern/download/root_v${ROOT_VERSION}.source.tar.gz |\
@@ -197,7 +197,9 @@ RUN __owner="geant4" &&\
         -DGEANT4_USE_GDML=ON \
         -DGEANT4_INSTALL_EXAMPLES=OFF \
         -DGEANT4_USE_OPENGL_X11=ON \
+        -DGEANT4_USE_SYSTEM_ZLIB=ON \
         -DCMAKE_INSTALL_PREFIX=${__prefix} \
+        -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
         -B src/build \
         -S src \
         &&\
@@ -257,7 +259,8 @@ RUN mkdir src &&\
       -DHEPMC3_BUILD_STATIC_LIBS:BOOL=ON \
       -DHEPMC3_BUILD_DOCS:BOOL=OFF \
       -DHEPMC3_ENABLE_PYTHON:BOOL=ON \
-      -DHEPMC3_PYTHON_VERSIONS=3.10 \
+      -DHEPMC3_PYTHON_VERSIONS=3.14 \
+      -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
       -B src/build \
       -S src \
     &&\
