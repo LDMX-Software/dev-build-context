@@ -454,5 +454,8 @@ RUN update-ca-certificates
 # copy environment initialization script into container
 # and make sure the default profile will call it as well
 ENV CMAKE_PREFIX_PATH=/usr/local
+# denv runs as the host user (non-root), so /usr/local must be world-writable
+# for ldmx-sw to install its libraries there
+RUN chmod -R a+rwX /usr/local
 COPY ./ldmx-env-init.sh /etc/
 RUN printf "\n%s\n" ". /etc/ldmx-env-init.sh" >> /etc/skel/.profile
