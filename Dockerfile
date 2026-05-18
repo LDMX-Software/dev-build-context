@@ -152,6 +152,8 @@ RUN mkdir src &&\
       -DCMAKE_CXX_STANDARD=20 \
       -DCMAKE_INSTALL_PREFIX=${__prefix} \
       -DCMAKE_INSTALL_LIBDIR=lib \
+      -DCMAKE_CXX_FLAGS="-fno-strict-aliasing" \
+      -DCMAKE_C_FLAGS="-fno-strict-aliasing" \
       -Dgnuinstall=ON \
       -Dgminimal=ON \
       -Dasimage=ON \
@@ -160,8 +162,8 @@ RUN mkdir src &&\
       -Dopengl=ON \
       -Dpyroot=ON \
       -Dxrootd=OFF \
-      -Dmathmore=ON \   
-      -Dpythia8=ON \    
+      -Dmathmore=ON \
+      -Dpythia8=ON \
       -B build \
       -S src \
     && cmake --build build --target install -j$NPROC &&\
@@ -200,6 +202,8 @@ RUN __owner="geant4" &&\
         -DGEANT4_USE_SYSTEM_ZLIB=ON \
         -DCMAKE_INSTALL_PREFIX=${__prefix} \
         -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+        -DCMAKE_CXX_FLAGS="-fno-strict-aliasing" \
+        -DCMAKE_C_FLAGS="-fno-strict-aliasing" \
         -B src/build \
         -S src \
         &&\
@@ -454,8 +458,5 @@ RUN update-ca-certificates
 # copy environment initialization script into container
 # and make sure the default profile will call it as well
 ENV CMAKE_PREFIX_PATH=/usr/local
-# denv runs as the host user (non-root), so /usr/local must be world-writable
-# for ldmx-sw to install its libraries there
-RUN chmod -R a+rwX /usr/local
 COPY ./ldmx-env-init.sh /etc/
 RUN printf "\n%s\n" ". /etc/ldmx-env-init.sh" >> /etc/skel/.profile
