@@ -23,6 +23,7 @@ RUN install-ubuntu-packages \
     cmake \
     gcc g++ gfortran \
     gcc-13 g++-13 \
+    libcurl4-openssl-dev \
     locales \
     make \
     parallel \
