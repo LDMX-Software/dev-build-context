@@ -151,11 +151,9 @@ RUN mkdir src &&\
      ${__untar} &&\
     cmake \
       -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_CXX_STANDARD=20 \
+      -DCMAKE_CXX_STANDARD=23 \
       -DCMAKE_INSTALL_PREFIX=${__prefix} \
       -DCMAKE_INSTALL_LIBDIR=lib \
-      -DCMAKE_CXX_FLAGS="-fno-strict-aliasing" \
-      -DCMAKE_C_FLAGS="-fno-strict-aliasing" \
       -Dgnuinstall=ON \
       -Dgminimal=ON \
       -Dasimage=ON \
@@ -206,8 +204,6 @@ RUN __owner="geant4" &&\
         -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
         -DCMAKE_C_COMPILER=gcc-13 \
         -DCMAKE_CXX_COMPILER=g++-13 \
-        -DCMAKE_CXX_FLAGS="-fno-strict-aliasing" \
-        -DCMAKE_C_FLAGS="-fno-strict-aliasing" \
         -B src/build \
         -S src \
         &&\
