@@ -22,6 +22,7 @@ RUN install-ubuntu-packages \
     ccache \
     cmake \
     gcc g++ gfortran \
+    gcc-13 g++-13 \
     locales \
     make \
     parallel \
@@ -202,6 +203,8 @@ RUN __owner="geant4" &&\
         -DGEANT4_USE_SYSTEM_ZLIB=ON \
         -DCMAKE_INSTALL_PREFIX=${__prefix} \
         -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+        -DCMAKE_C_COMPILER=gcc-13 \
+        -DCMAKE_CXX_COMPILER=g++-13 \
         -DCMAKE_CXX_FLAGS="-fno-strict-aliasing" \
         -DCMAKE_C_FLAGS="-fno-strict-aliasing" \
         -B src/build \
