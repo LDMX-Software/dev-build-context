@@ -186,7 +186,7 @@ ENV CLING_STANDARD_PCH=none
 # Assumptions
 #  - GEANT4 defined to be a release of geant4 or LDMX's fork of geant4
 ###############################################################################
-ENV GEANT4=LDMX.10.2.3_v0.6
+ENV GEANT4=v10.7.3
 ENV G4DATADIR="${__prefix}/share/geant4/data"
 LABEL geant4.version="${GEANT4}"
 RUN __owner="geant4" &&\
