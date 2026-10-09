@@ -186,11 +186,11 @@ ENV CLING_STANDARD_PCH=none
 # Assumptions
 #  - GEANT4 defined to be a release of geant4 or LDMX's fork of geant4
 ###############################################################################
-ENV GEANT4=v10.7.3
+ENV GEANT4=v11.4.3
 ENV G4DATADIR="${__prefix}/share/geant4/data"
 LABEL geant4.version="${GEANT4}"
 RUN __owner="geant4" &&\
-    echo "${GEANT4}" | grep -q "LDMX" && __owner="LDMX-Software" &&\
+    echo "${GEANT4}" | grep -q "LDMX" && __owner="LDMX-Software" ||\
     mkdir src &&\
     ${__wget} https://github.com/${__owner}/geant4/archive/${GEANT4}.tar.gz | ${__untar} &&\
     cmake \
