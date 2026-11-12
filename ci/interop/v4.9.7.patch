@@ -1,0 +1,711 @@
+diff --git a/Biasing/src/Biasing/DeepEcalProcessFilter.cxx b/Biasing/src/Biasing/DeepEcalProcessFilter.cxx
+index 7c03bb120..6acffcbae 100644
+--- a/Biasing/src/Biasing/DeepEcalProcessFilter.cxx
++++ b/Biasing/src/Biasing/DeepEcalProcessFilter.cxx
+@@ -45,7 +45,7 @@ void DeepEcalProcessFilter::stepping(const G4Step* step) {
+ 
+   // Skip the steps that are for the recoil electron
+   // PrimaryToEcalFilter made sure there is a fiducial e-
+-  if (process_name.contains("unknown")) return;
++  if (G4StrUtil::contains(process_name, "unknown")) return;
+ 
+   // Energy of the particle is below threshold, move to next step
+   if (track->GetKineticEnergy() < bias_threshold_) {
+@@ -59,11 +59,12 @@ void DeepEcalProcessFilter::stepping(const G4Step* step) {
+ 
+   auto track_info{simcore::UserTrackInformation::get(track)};
+   // Tag the brem photon from the primary electron
+-  if (process_name.contains("eBrem") and (track->GetParentID() == 1)) {
++  if (G4StrUtil::contains(process_name, "eBrem") and
++      (track->GetParentID() == 1)) {
+     track_info->tagBremCandidate();
+     getEventInfo()->incBremCandidateCount();
+     track_info->setSaveFlag(true);
+-    if (volume_name.contains("target")) {
++    if (G4StrUtil::contains(volume_name, "target")) {
+       photon_from_target_ = true;
+     }
+   }
+@@ -79,7 +80,7 @@ void DeepEcalProcessFilter::stepping(const G4Step* step) {
+   for (auto& process : processes_) {
+     // ldmx_log(debug) << "Allowed processed " << process << " now we have " <<
+     // processName;
+-    if (process_name.contains(process)) {
++    if (G4StrUtil::contains(process_name, std::string_view(process))) {
+       has_process_needed = true;
+       break;
+     }
+diff --git a/Biasing/src/Biasing/EcalDarkBremFilter.cxx b/Biasing/src/Biasing/EcalDarkBremFilter.cxx
+index cb0df5544..231f922fb 100644
+--- a/Biasing/src/Biasing/EcalDarkBremFilter.cxx
++++ b/Biasing/src/Biasing/EcalDarkBremFilter.cxx
+@@ -29,10 +29,12 @@ EcalDarkBremFilter::EcalDarkBremFilter(
+   for (G4LogicalVolume* volume : *G4LogicalVolumeStore::GetInstance()) {
+     G4String volume_name = volume->GetName();
+     // looking for ecal volumes
+-    if (volume_name.contains("volume") and
+-        (volume_name.contains("Si") or volume_name.contains("W") or
+-         volume_name.contains("CFMix") or volume_name.contains("PCB") or
+-         volume_name.contains("Al"))) {
++    if (G4StrUtil::contains(volume_name, "volume") and
++        (G4StrUtil::contains(volume_name, "Si") or
++         G4StrUtil::contains(volume_name, "W") or
++         G4StrUtil::contains(volume_name, "CFMix") or
++         G4StrUtil::contains(volume_name, "PCB") or
++         G4StrUtil::contains(volume_name, "Al"))) {
+       volumes_.push_back(volume);
+     }
+   }
+@@ -81,8 +83,9 @@ void EcalDarkBremFilter::postUserTrackingAction(const G4Track* track) {
+                   << track->GetParticleDefinition()->GetPDGEncoding();
+ 
+   const G4VProcess* creator = track->GetCreatorProcess();
+-  if (creator and
+-      creator->GetProcessName().contains(G4DarkBremsstrahlung::PROCESS_NAME)) {
++  if (creator and G4StrUtil::contains(
++                      creator->GetProcessName(),
++                      std::string_view(G4DarkBremsstrahlung::PROCESS_NAME))) {
+     // make sure all secondaries of dark brem process are saved
+     simcore::UserTrackInformation* user_info =
+         simcore::UserTrackInformation::get(track);
+diff --git a/Biasing/src/Biasing/EcalProcessFilter.cxx b/Biasing/src/Biasing/EcalProcessFilter.cxx
+index b255dc430..11e9be8c4 100644
+--- a/Biasing/src/Biasing/EcalProcessFilter.cxx
++++ b/Biasing/src/Biasing/EcalProcessFilter.cxx
+@@ -153,7 +153,7 @@ void EcalProcessFilter::stepping(const G4Step* step) {
+         secondaries->at(0)->GetCreatorProcess()->GetProcessName()};
+ 
+     // Only record the process that is being biased
+-    if (!process_name.contains(process_)) {
++    if (!G4StrUtil::contains(process_name, std::string_view(process_))) {
+       /*
+       std::cout << "[ EcalProcessFilter ]: "
+             <<
+diff --git a/Biasing/src/Biasing/MidShowerNuclearBkgdFilter.cxx b/Biasing/src/Biasing/MidShowerNuclearBkgdFilter.cxx
+index 80d83bd8e..33b864ab2 100644
+--- a/Biasing/src/Biasing/MidShowerNuclearBkgdFilter.cxx
++++ b/Biasing/src/Biasing/MidShowerNuclearBkgdFilter.cxx
+@@ -92,7 +92,7 @@ bool MidShowerNuclearBkgdFilter::isNuclearProcess(
+   if (proc) {
+     const G4String& proc_name{proc->GetProcessName()};
+     for (auto const& option : nuclear_processes_) {
+-      if (proc_name.contains(option)) return true;
++      if (G4StrUtil::contains(proc_name, std::string_view(option))) return true;
+     }  // loop over nuclear processes
+   }  // pointer exists
+   return false;
+diff --git a/Biasing/src/Biasing/TargetENProcessFilter.cxx b/Biasing/src/Biasing/TargetENProcessFilter.cxx
+index 558da5659..42e3ce541 100644
+--- a/Biasing/src/Biasing/TargetENProcessFilter.cxx
++++ b/Biasing/src/Biasing/TargetENProcessFilter.cxx
+@@ -82,7 +82,7 @@ void TargetENProcessFilter::stepping(const G4Step* step) {
+                     << " particle via " << process_name << " process.";
+ 
+     // Only record the process that is being biased
+-    if (!process_name.contains(process_)) {
++    if (!G4StrUtil::contains(process_name, std::string_view(process_))) {
+       ldmx_log(debug) << "Process was not " << process_
+                       << "--> Killing all tracks!";
+ 
+diff --git a/Biasing/src/Biasing/TargetProcessFilter.cxx b/Biasing/src/Biasing/TargetProcessFilter.cxx
+index c0f2d04a5..51380579c 100644
+--- a/Biasing/src/Biasing/TargetProcessFilter.cxx
++++ b/Biasing/src/Biasing/TargetProcessFilter.cxx
+@@ -135,7 +135,7 @@ void TargetProcessFilter::stepping(const G4Step* step) {
+         secondaries->at(0)->GetCreatorProcess()->GetProcessName();
+ 
+     // Only record the process that is being biased
+-    if (!process_name.contains(process_)) {
++    if (!G4StrUtil::contains(process_name, std::string_view(process_))) {
+       if (getEventInfo()->bremCandidateCount() == 1) {
+         track->SetTrackStatus(fKillTrackAndSecondaries);
+         G4RunManager::GetRunManager()->AbortEvent();
+diff --git a/Biasing/src/Biasing/Utility/TrackProcessFilter.cxx b/Biasing/src/Biasing/Utility/TrackProcessFilter.cxx
+index 00d72846d..86f5882c9 100644
+--- a/Biasing/src/Biasing/Utility/TrackProcessFilter.cxx
++++ b/Biasing/src/Biasing/Utility/TrackProcessFilter.cxx
+@@ -26,7 +26,8 @@ void TrackProcessFilter::postUserTrackingAction(const G4Track* track) {
+   if (const G4VProcess* process{track->GetCreatorProcess()}; process) {
+     auto name{process->GetProcessName()};
+     auto track_info{simcore::UserTrackInformation::get(track)};
+-    if (name.contains(process_)) track_info->setSaveFlag(true);
++    if (G4StrUtil::contains(name, std::string_view(process_)))
++      track_info->setSaveFlag(true);
+   }  // does this track have a creator process
+ }
+ 
+diff --git a/SimCore/include/SimCore/G4User/PtrRetrieval.h b/SimCore/include/SimCore/G4User/PtrRetrieval.h
+index 4ec693ac3..9af841588 100644
+--- a/SimCore/include/SimCore/G4User/PtrRetrieval.h
++++ b/SimCore/include/SimCore/G4User/PtrRetrieval.h
+@@ -83,7 +83,8 @@ inline G4Region* getRegion(const std::string& name) {
+  * @return Pointer to the physical volume if found, nullptr otherwise.
+  */
+ inline G4VPhysicalVolume* getPhysicalVolume(const std::string& name) {
+-  auto* volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(name);
++  // Quiet, names repeat when the GDML is parsed more than once
++  auto* volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(name, false);
+   if (!volume) {
+     return nullptr;
+   }
+@@ -96,7 +97,7 @@ inline G4VPhysicalVolume* getPhysicalVolume(const std::string& name) {
+  * @return Pointer to the logical volume if found, nullptr otherwise.
+  */
+ inline G4LogicalVolume* getLogicalVolume(const std::string& name) {
+-  auto* volume = G4LogicalVolumeStore::GetInstance()->GetVolume(name);
++  auto* volume = G4LogicalVolumeStore::GetInstance()->GetVolume(name, false);
+   if (!volume) {
+     return nullptr;
+   }
+diff --git a/SimCore/include/SimCore/G4User/VolumeChecks.h b/SimCore/include/SimCore/G4User/VolumeChecks.h
+index 6a839055f..85b1ed3d8 100644
+--- a/SimCore/include/SimCore/G4User/VolumeChecks.h
++++ b/SimCore/include/SimCore/G4User/VolumeChecks.h
+@@ -22,12 +22,16 @@ namespace volumechecks {
+  */
+ inline bool isInEcal(G4LogicalVolume* vol, const std::string& vol_to_bias) {
+   const G4String& volume_name = vol->GetName();
+-  return ((volume_name.contains("Si") || volume_name.contains("W") ||
+-           volume_name.contains("PCB") || volume_name.contains("strongback") ||
+-           volume_name.contains("Glue") || volume_name.contains("CFMix") ||
+-           volume_name.contains("Al") || volume_name.contains("C")) &&
+-          volume_name.contains("volume")) ||
+-         (volume_name.contains("nohole_motherboard"));
++  return ((G4StrUtil::contains(volume_name, "Si") ||
++           G4StrUtil::contains(volume_name, "W") ||
++           G4StrUtil::contains(volume_name, "PCB") ||
++           G4StrUtil::contains(volume_name, "strongback") ||
++           G4StrUtil::contains(volume_name, "Glue") ||
++           G4StrUtil::contains(volume_name, "CFMix") ||
++           G4StrUtil::contains(volume_name, "Al") ||
++           G4StrUtil::contains(volume_name, "C")) &&
++          G4StrUtil::contains(volume_name, "volume")) ||
++         (G4StrUtil::contains(volume_name, "nohole_motherboard"));
+ }
+ 
+ /**
+@@ -40,9 +44,11 @@ inline bool isInEcal(G4LogicalVolume* vol, const std::string& vol_to_bias) {
+  */
+ inline bool isInHcal(G4LogicalVolume* vol, const std::string& vol_to_bias) {
+   const G4String& volume_name = vol->GetName();
+-  return ((volume_name.contains("abso") || volume_name.contains("ScintBox") ||
+-           volume_name.contains("scint")) &&
+-          volume_name.contains("hcal") && volume_name.contains("olume"));
++  return ((G4StrUtil::contains(volume_name, "abso") ||
++           G4StrUtil::contains(volume_name, "ScintBox") ||
++           G4StrUtil::contains(volume_name, "scint")) &&
++          G4StrUtil::contains(volume_name, "hcal") &&
++          G4StrUtil::contains(volume_name, "olume"));
+ }
+ 
+ /**
+@@ -58,8 +64,9 @@ inline bool isInHcal(G4LogicalVolume* vol, const std::string& vol_to_bias) {
+  */
+ inline bool isInEcalOld(G4LogicalVolume* vol, const std::string& vol_to_bias) {
+   const G4String& volume_name = vol->GetName();
+-  return ((volume_name.contains("Si") || volume_name.contains("W")) &&
+-          volume_name.contains("volume"));
++  return ((G4StrUtil::contains(volume_name, "Si") ||
++           G4StrUtil::contains(volume_name, "W")) &&
++          G4StrUtil::contains(volume_name, "volume"));
+ }
+ 
+ /**
+@@ -73,7 +80,7 @@ inline bool isInEcalOld(G4LogicalVolume* vol, const std::string& vol_to_bias) {
+ inline bool isInTargetRegion(G4LogicalVolume* vol,
+                              const std::string& vol_to_bias) {
+   auto region = vol->GetRegion();
+-  return (region and region->GetName().contains("target"));
++  return (region and G4StrUtil::contains(region->GetName(), "target"));
+ }
+ 
+ /**
+@@ -88,7 +95,7 @@ inline bool isInTargetRegion(G4LogicalVolume* vol,
+  */
+ inline bool isInTargetOnly(G4LogicalVolume* vol,
+                            const std::string& vol_to_bias) {
+-  return vol->GetName().contains("target");
++  return G4StrUtil::contains(vol->GetName(), "target");
+ }
+ 
+ /**
+@@ -104,7 +111,7 @@ inline bool isInTargetOnly(G4LogicalVolume* vol,
+  * @param[in] vol_to_bias name of volume to bias
+  */
+ inline bool nameContains(G4LogicalVolume* vol, const std::string& vol_to_bias) {
+-  return vol->GetName().contains(vol_to_bias);
++  return G4StrUtil::contains(vol->GetName(), std::string_view(vol_to_bias));
+ }
+ 
+ }  // namespace volumechecks
+diff --git a/SimCore/include/SimCore/GammaConversionToMuons.h b/SimCore/include/SimCore/GammaConversionToMuons.h
+new file mode 100644
+index 000000000..e80a8e4a8
+--- /dev/null
++++ b/SimCore/include/SimCore/GammaConversionToMuons.h
+@@ -0,0 +1,62 @@
++/**
++ * @file GammaConversionToMuons.h
++ * @brief gamma -> mu+ mu- with the full Tsai matrix element final state
++ *
++ * @author Tamas Almos Vami, UCSB
++ */
++
++#ifndef SIMCORE_GAMMACONVERSIONTOMUONS_H_
++#define SIMCORE_GAMMACONVERSIONTOMUONS_H_
++
++#include "G4GammaConversionToMuons.hh"
++
++namespace simcore {
++
++/**
++ * @class GammaConversionToMuons
++ * @brief Geant4's gamma -> mu+ mu- process with a Tsai (1974) final state
++ *
++ * Cross sections, the 5D model and the sampling near threshold are Geant4's.
++ * Above 5 muon masses the pair kinematics are sampled from the full Tsai
++ * matrix element with a dipole form factor (exact up to 1/M_nucleus and
++ * inelastic terms) instead of Geant4's factorized approximation. This was
++ * an LDMX patch to Geant4 10.2.3, written by N. Toro (muonNotes in
++ * LDMX-Software/geant4 LDMX.10.2.3_v0.6).
++ *
++ * The process name stays "GammaToMuPair" so biasing operators find it.
++ */
++class GammaConversionToMuons : public G4GammaConversionToMuons {
++ public:
++  GammaConversionToMuons() = default;
++  ~GammaConversionToMuons() override = default;
++
++  /**
++   * Generate the final state, Tsai sampling above 5 muon masses
++   */
++  G4VParticleChange* PostStepDoIt(const G4Track& track,
++                                  const G4Step& step) override;
++
++ private:
++  /**
++   * Pick an element of the material weighted by its cross section
++   */
++  const G4Element* selectElement(G4double egam, const G4Material* material);
++
++  /**
++   * Sample the pair kinematics from the Tsai matrix element
++   *
++   * @param[in] egam photon energy
++   * @param[in] a027 A^0.27 of the target nucleus
++   * @param[out] x_plus energy fraction of the mu+
++   * @param[out] theta_plus mu+ polar angle
++   * @param[out] theta_minus mu- polar angle
++   * @param[out] phi_half half of the azimuthal opening angle
++   */
++  void sampleTsai(G4double egam, G4double a027, G4double& x_plus,
++                  G4double& theta_plus, G4double& theta_minus,
++                  G4double& phi_half) const;
++};
++
++}  // namespace simcore
++
++#endif  // SIMCORE_GAMMACONVERSIONTOMUONS_H_
+diff --git a/SimCore/include/SimCore/GammaPhysics.h b/SimCore/include/SimCore/GammaPhysics.h
+index b5e4e30f6..014c220ff 100644
+--- a/SimCore/include/SimCore/GammaPhysics.h
++++ b/SimCore/include/SimCore/GammaPhysics.h
+@@ -14,8 +14,8 @@
+ //   Geant4   //
+ //------------//
+ #include "Framework/Configure/Parameters.h"
+-#include "G4GammaConversionToMuons.hh"
+ #include "G4VPhysicsConstructor.hh"
++#include "SimCore/GammaConversionToMuons.h"
+ 
+ namespace simcore {
+ 
+@@ -70,7 +70,7 @@ class GammaPhysics : public G4VPhysicsConstructor {
+   /**
+    * The gamma to muons process.
+    */
+-  G4GammaConversionToMuons gamma_conv_process_;
++  GammaConversionToMuons gamma_conv_process_;
+ 
+   /**
+    * Parameters from the configuration to pass along to the photonuclear model.
+diff --git a/SimCore/include/SimCore/PhotoNuclearModels/BertiniModel.h b/SimCore/include/SimCore/PhotoNuclearModels/BertiniModel.h
+index 7c95cc148..3cc5f4e94 100644
+--- a/SimCore/include/SimCore/PhotoNuclearModels/BertiniModel.h
++++ b/SimCore/include/SimCore/PhotoNuclearModels/BertiniModel.h
+@@ -12,6 +12,9 @@ namespace simcore {
+  * G4HadronicInteraction comes registered by default, this model does not
+  * construct any new process but does override the removeExistingModel function
+  * to ensure that the existing process is not removed.
++ *
++ * It moves the Bertini to QGS transition of the existing process to 8-10 GeV
++ * (Geant4: 3-6 GeV), so the GeV photons LDMX cares about stay in Bertini.
+  */
+ class BertiniModel : public PhotoNuclearModel {
+  public:
+@@ -20,9 +23,9 @@ class BertiniModel : public PhotoNuclearModel {
+       : PhotoNuclearModel{name, parameters} {}
+   virtual ~BertiniModel() = default;
+   /**
+-   * Do nothing, the Bertini process is already present.
++   * The Bertini process is already present, only set its energy ranges
+    */
+-  void constructGammaProcess(G4ProcessManager*) override {}
++  void constructGammaProcess(G4ProcessManager* process_manager) override;
+   /**
+    * Do nothing, we don't want to remove the existing process.
+    */
+diff --git a/SimCore/src/SimCore/GammaConversionToMuons.cxx b/SimCore/src/SimCore/GammaConversionToMuons.cxx
+new file mode 100644
+index 000000000..10be30713
+--- /dev/null
++++ b/SimCore/src/SimCore/GammaConversionToMuons.cxx
+@@ -0,0 +1,199 @@
++#include "SimCore/GammaConversionToMuons.h"
++
++#include <algorithm>
++#include <cmath>
++
++#include "G4DynamicParticle.hh"
++#include "G4EmParameters.hh"
++#include "G4Exp.hh"
++#include "G4Log.hh"
++#include "G4Material.hh"
++#include "G4MuonMinus.hh"
++#include "G4MuonPlus.hh"
++#include "G4NistManager.hh"
++#include "G4PhysicalConstants.hh"
++#include "G4Track.hh"
++#include "Randomize.hh"
++
++namespace simcore {
++
++G4VParticleChange* GammaConversionToMuons::PostStepDoIt(const G4Track& track,
++                                                        const G4Step& step) {
++  const G4double mmuon{G4MuonPlus::MuonPlus()->GetPDGMass()};
++  const G4DynamicParticle* gamma{track.GetDynamicParticle()};
++  const G4double egam{gamma->GetKineticEnergy()};
++
++  // Geant4's own sampling near threshold and in the 5D model range
++  if (egam <= 5. * mmuon ||
++      egam <= G4EmParameters::Instance()->MaxEnergyFor5DMuPair()) {
++    return G4GammaConversionToMuons::PostStepDoIt(track, step);
++  }
++
++  aParticleChange.Initialize(track);
++  aParticleChange.ProposeMomentumDirection(0., 0., 0.);
++  aParticleChange.ProposeEnergy(0.);
++  aParticleChange.ProposeTrackStatus(fStopAndKill);
++
++  const G4Element* element{selectElement(egam, track.GetMaterial())};
++  const G4double a027{G4NistManager::Instance()->GetA27(element->GetZasInt())};
++
++  G4double x_plus{0.5}, theta_plus{0.}, theta_minus{0.}, phi_half{0.};
++  sampleTsai(egam, a027, x_plus, theta_plus, theta_minus, phi_half);
++  const G4double x_minus{1. - x_plus};
++
++  // Directions for a photon along z, azimuth uniform
++  const G4double phi0{CLHEP::twopi * G4UniformRand()};
++  G4ThreeVector dir_plus(std::sin(theta_plus) * std::cos(phi0 + phi_half),
++                         std::sin(theta_plus) * std::sin(phi0 + phi_half),
++                         std::cos(theta_plus));
++  G4ThreeVector dir_minus(-std::sin(theta_minus) * std::cos(phi0 - phi_half),
++                          -std::sin(theta_minus) * std::sin(phi0 - phi_half),
++                          std::cos(theta_minus));
++  dir_plus.rotateUz(gamma->GetMomentumDirection());
++  dir_minus.rotateUz(gamma->GetMomentumDirection());
++
++  aParticleChange.AddSecondary(new G4DynamicParticle(
++      G4MuonPlus::MuonPlus(), dir_plus, x_plus * egam - mmuon));
++  aParticleChange.AddSecondary(new G4DynamicParticle(
++      G4MuonMinus::MuonMinus(), dir_minus, x_minus * egam - mmuon));
++  return G4VDiscreteProcess::PostStepDoIt(track, step);
++}
++
++const G4Element* GammaConversionToMuons::selectElement(
++    G4double egam, const G4Material* material) {
++  const G4ElementVector* elements{material->GetElementVector()};
++  const G4double* atoms_per_volume{material->GetVecNbOfAtomsPerVolume()};
++  const std::size_t n{material->GetNumberOfElements()};
++  if (n == 1) return (*elements)[0];
++
++  std::vector<G4double> cumulative(n, 0.);
++  G4double sum{0.};
++  for (std::size_t i = 0; i < n; ++i) {
++    sum += atoms_per_volume[i] *
++           ComputeCrossSectionPerAtom(egam, (*elements)[i]->GetZasInt());
++    cumulative[i] = sum;
++  }
++  const G4double r{sum * G4UniformRand()};
++  for (std::size_t i = 0; i < n; ++i) {
++    if (r <= cumulative[i]) return (*elements)[i];
++  }
++  return (*elements)[n - 1];
++}
++
++void GammaConversionToMuons::sampleTsai(G4double egam, G4double a027,
++                                        G4double& x_plus, G4double& theta_plus,
++                                        G4double& theta_minus,
++                                        G4double& phi_half) const {
++  // All kinematics in units of the muon mass
++  const G4double mmuon{G4MuonPlus::MuonPlus()->GetPDGMass()};
++  const G4double gamma_muon_inv{mmuon / egam};
++  const G4double gamma0{1. / gamma_muon_inv};
++  const G4double sqrtx{std::sqrt(0.25 - gamma_muon_inv)};
++  const G4double xmin{0.5 - sqrtx};
++  const G4double x_range{2. * sqrtx};
++  const G4int nmax{1000};
++
++  // Weights reach ~1.3 at TeV, below 1 at 1-10 GeV
++  const G4double max_weight{1.5};
++
++  // q/mMu scale of the form factor, PRM (6.115)
++  const G4double q_form_factor{1. / (0.20 * a027)};
++
++  // log(rho) range scale, only flattens the max weight in energy
++  const G4double x4{std::pow(2. * gamma_muon_inv, 4.)};
++  const G4double a_range_norm{G4Log((std::pow(q_form_factor, 4.) + x4) / x4)};
++
++  G4bool good_event{false};
++  G4int nn{0};
++  do {
++    ++nn;
++
++    const G4double xp{xmin + G4UniformRand() * x_range};
++    const G4double xm{1. - xp};
++    const G4double del_over_mmuon{mmuon / (2. * egam * xp * xm)};
++
++    // Sample t, psi and a = log(rho^4+c2^4)
++    const G4double t{G4UniformRand()};
++    const G4double u{std::sqrt(1. / t - 1.)};
++    const G4double psi{CLHEP::twopi * G4UniformRand()};
++
++    const G4double rho_max{std::min(2. * u / std::abs(std::cos(psi)),
++                                    CLHEP::pi * u / std::abs(std::sin(psi)))};
++    const G4double c24{std::pow(del_over_mmuon / t, 4.)};
++    const G4double amin{G4Log(c24)};
++    const G4double a_range{G4Log(std::pow(rho_max, 4.) + c24) - amin};
++    const G4double a{amin + G4UniformRand() * a_range};
++    const G4double rho{std::pow(G4Exp(a) - c24, 0.25)};
++
++    const G4double xi_half{0.5 * rho * std::cos(psi)};
++    const G4double phi{rho / u * std::sin(psi)};
++    const G4double u_plus{u + xi_half};
++    const G4double u_minus{u - xi_half};
++
++    // Reject angles beyond pi
++    if (u_plus > xp * CLHEP::pi / gamma_muon_inv ||
++        u_minus > xm * CLHEP::pi / gamma_muon_inv) {
++      continue;
++    }
++
++    const G4double th_p{gamma_muon_inv * u_plus / xp};
++    const G4double gamma_p{gamma0 * xp};
++    const G4double beta_p{std::sqrt(1. - 1. / (gamma_p * gamma_p))};
++    const G4double kdotp_p{gamma0 * gamma_p * (1. - beta_p * std::cos(th_p))};
++    const G4double pperp_p{beta_p * gamma_p * std::sin(th_p)};
++
++    const G4double th_m{gamma_muon_inv * u_minus / xm};
++    const G4double gamma_m{gamma0 * xm};
++    const G4double beta_m{std::sqrt(1. - 1. / (gamma_m * gamma_m))};
++    const G4double kdotp_m{gamma0 * gamma_m * (1. - beta_m * std::cos(th_m))};
++    const G4double pperp_m{beta_m * gamma_m * std::sin(th_m)};
++
++    // Positive squared momentum transfer
++    const G4double qpar{gamma0 - beta_m * gamma_m * std::cos(th_m) -
++                        beta_p * gamma_p * std::cos(th_p)};
++    const G4double q2perp{(pperp_p - pperp_m) * (pperp_p - pperp_m) +
++                          2. * pperp_p * pperp_m * (1. - std::cos(phi))};
++    const G4double q2{qpar * qpar + q2perp};
++
++    // Measure and Jacobians from (a, t, psi) to (u+, u-, phi)
++    const G4double measure{x_range * a_range / a_range_norm};
++    const G4double jacobian{G4Exp(a) / (rho * rho * rho) * rho /
++                            (t * (1. - t))};
++
++    // Tsai 1974 matrix element
++    const G4double term1_p{-(-q2 + kdotp_m) / kdotp_p};
++    const G4double term1_m{-(-q2 + kdotp_p) / kdotp_m};
++    const G4double term2_p{(-q2 / 2. + 2. * gamma_m * gamma_m) /
++                           (kdotp_p * kdotp_p)};
++    const G4double term2_m{(-q2 / 2. + 2. * gamma_p * gamma_p) /
++                           (kdotp_m * kdotp_m)};
++    const G4double mixed{2. *
++                         ((1. + q2 / 2.) * (-2. * gamma_m * gamma_p - q2 / 2.) +
++                          q2 * gamma0 * gamma0 / 2.) /
++                         (kdotp_m * kdotp_p)};
++    const G4double matrix_el{std::sin(th_p) * std::sin(th_m) / (4. * q2 * q2) *
++                             (term1_p + term1_m + term2_p + term2_m + mixed)};
++
++    const G4double ff_sqrt{1. / (1. + q2 / (q_form_factor * q_form_factor))};
++    const G4double weight{measure * jacobian * matrix_el * ff_sqrt * ff_sqrt};
++
++    if (weight < 0. || weight > max_weight) {
++      G4cerr << "GammaConversionToMuons: weight " << weight
++             << " out of bounds 0 to " << max_weight << G4endl;
++    }
++
++    x_plus = xp;
++    theta_plus = th_p;
++    theta_minus = th_m;
++    phi_half = 0.5 * phi;
++
++    if (G4UniformRand() * max_weight < weight) good_event = true;
++  } while (nn < nmax && !good_event);
++
++  if (!good_event) {
++    G4cerr << "GammaConversionToMuons: no event accepted after " << nmax
++           << " tries, using the last sampled kinematics" << G4endl;
++  }
++}
++
++}  // namespace simcore
+diff --git a/SimCore/src/SimCore/GenieElectroNuclearProcess.cxx b/SimCore/src/SimCore/GenieElectroNuclearProcess.cxx
+index 37a0bad31..a41fb4cf5 100644
+--- a/SimCore/src/SimCore/GenieElectroNuclearProcess.cxx
++++ b/SimCore/src/SimCore/GenieElectroNuclearProcess.cxx
+@@ -417,7 +417,8 @@ G4VParticleChange* GenieElectroNuclearProcess::PostStepDoIt(
+     G4ProcessManager* pman = track.GetDefinition()->GetProcessManager();
+     for (int i_proc = 0; i_proc < pman->GetProcessList()->size(); i_proc++) {
+       G4VProcess* p = (*(pman->GetProcessList()))[i_proc];
+-      if (p->GetProcessName().contains(PROCESS_NAME)) {
++      if (G4StrUtil::contains(p->GetProcessName(),
++                              std::string_view(PROCESS_NAME))) {
+         pman->SetProcessActivation(p, false);
+         break;
+       }
+diff --git a/SimCore/src/SimCore/Geo/AuxInfoReader.cxx b/SimCore/src/SimCore/Geo/AuxInfoReader.cxx
+index 9fbe99498..5a6f5a61a 100644
+--- a/SimCore/src/SimCore/Geo/AuxInfoReader.cxx
++++ b/SimCore/src/SimCore/Geo/AuxInfoReader.cxx
+@@ -251,7 +251,9 @@ void AuxInfoReader::createRegion(const G4String& name,
+   // within the region
+   //
+   // NOLINTBEGIN
+-  auto region = new G4Region(name);
++  // G4GDMLParser may have created it already, with zero cuts
++  auto region = G4RegionStore::GetInstance()->GetRegion(name, false);
++  if (region == nullptr) region = new G4Region(name);
+   region->SetUserInformation(region_info);
+   // To get rid of those pesky G4 warnings
+   region->SetProductionCuts(G4ProductionCutsTable::GetProductionCutsTable()
+diff --git a/SimCore/src/SimCore/PhotoNuclearModels/BertiniModel.cxx b/SimCore/src/SimCore/PhotoNuclearModels/BertiniModel.cxx
+index 7a0a94dcb..1adae3ac2 100644
+--- a/SimCore/src/SimCore/PhotoNuclearModels/BertiniModel.cxx
++++ b/SimCore/src/SimCore/PhotoNuclearModels/BertiniModel.cxx
+@@ -1,3 +1,30 @@
+ #include "SimCore/PhotoNuclearModels/BertiniModel.h"
+ 
++#include "G4CascadeInterface.hh"
++#include "G4HadronicProcess.hh"
++#include "G4SystemOfUnits.hh"
++#include "G4TheoFSGenerator.hh"
++
++namespace simcore {
++
++void BertiniModel::constructGammaProcess(G4ProcessManager* process_manager) {
++  const auto processes{process_manager->GetProcessList()};
++  for (int i{0}; i < processes->size(); ++i) {
++    auto process{dynamic_cast<G4HadronicProcess*>((*processes)[i])};
++    if (process == nullptr or process->GetProcessName() != "photonNuclear") {
++      continue;
++    }
++    for (auto model : process->GetHadronicInteractionList()) {
++      // Bertini up to 10 GeV, QGS from 8 GeV
++      if (dynamic_cast<G4CascadeInterface*>(model)) {
++        model->SetMaxEnergy(10. * GeV);
++      } else if (dynamic_cast<G4TheoFSGenerator*>(model)) {
++        model->SetMinEnergy(8. * GeV);
++      }
++    }
++  }
++}
++
++}  // namespace simcore
++
+ DECLARE_PHOTONUCLEAR_MODEL(simcore::BertiniModel)
+diff --git a/SimCore/src/SimCore/RunManager.cxx b/SimCore/src/SimCore/RunManager.cxx
+index 8202226e3..decc911be 100644
+--- a/SimCore/src/SimCore/RunManager.cxx
++++ b/SimCore/src/SimCore/RunManager.cxx
+@@ -28,9 +28,13 @@
+ //------------//
+ //   Geant4   //
+ //------------//
++#include "G4Electron.hh"
++#include "G4EmParameters.hh"
+ #include "G4GDMLParser.hh"
+ #include "G4GenericBiasingPhysics.hh"
++#include "G4HadronicParameters.hh"
+ #include "G4ParallelWorldPhysics.hh"
++#include "G4UImanager.hh"
+ #include "G4VModularPhysicsList.hh"
+ #include "SimCore/KaonPhysics.h"
+ 
+@@ -52,6 +56,14 @@ void RunManager::setupPhysics() {
+   auto p_list{physics_list_factory_.GetReferencePhysList("FTFP_BERT")};
+   p_list->SetVerboseLevel(0);
+ 
++  // Keep gamma processes separate, biasing finds them by name
++  G4EmParameters::Instance()->SetGeneralProcessActive(false);
++  // Same PN cross section as our custom PN models
++  G4UImanager::GetUIpointer()->ApplyCommand(
++      "/physics_lists/em/UseGammaNuclearXS false");
++  // Bertini multi-body angles as in 11.2, 11.5 replaces the 11.3 algorithm
++  G4HadronicParameters::Instance()->SetBertiniAngularEmissionsAs11_2(true);
++
+   parallel_world_path_ = parameters_.get<std::string>("scoring_planes");
+   is_pw_enabled_ = !parallel_world_path_.empty();
+   if (is_pw_enabled_) {
+@@ -194,9 +206,12 @@ void RunManager::TerminateOneEvent() {
+   G4ProcessManager* pman = G4Electron::Definition()->GetProcessManager();
+   for (int i_proc{0}; i_proc < pman->GetProcessList()->size(); i_proc++) {
+     G4VProcess* p{(*(pman->GetProcessList()))[i_proc]};
+-    if (p->GetProcessName().contains(G4DarkBremsstrahlung::PROCESS_NAME) or
+-        p->GetProcessName().contains(
+-            GenieElectroNuclearProcess::PROCESS_NAME)) {
++    if (G4StrUtil::contains(
++            p->GetProcessName(),
++            std::string_view(G4DarkBremsstrahlung::PROCESS_NAME)) or
++        G4StrUtil::contains(
++            p->GetProcessName(),
++            std::string_view(GenieElectroNuclearProcess::PROCESS_NAME))) {
+       pman->SetProcessActivation(p, true);
+       break;
+     }
+diff --git a/Tracking/src/Tracking/geo/TrackingGeometry.cxx b/Tracking/src/Tracking/geo/TrackingGeometry.cxx
+index 87d9bc2bc..26b3d61d0 100644
+--- a/Tracking/src/Tracking/geo/TrackingGeometry.cxx
++++ b/Tracking/src/Tracking/geo/TrackingGeometry.cxx
+@@ -12,7 +12,7 @@
+ 
+ #include "Framework/Exception/Exception.h"
+ #include "G4UIsession.hh"
+-#include "G4strstreambuf.hh"
++#include "G4ios.hh"
+ 
+ namespace tracking::geo {
+ 
+@@ -76,10 +76,8 @@ TrackingGeometry::TrackingGeometry(const std::string& name,
+   if (G4RunManager::GetRunManager() == nullptr) {
+     // no run manager ==> no simulation
+     silence = std::make_unique<SilentG4>();
+-    // these lines compied from G4UImanager::SetCoutDestination
+-    // to avoid creating G4UImanager unnecessarily
+-    G4coutbuf.SetDestination(silence.get());
+-    G4cerrbuf.SetDestination(silence.get());
++    // avoid creating G4UImanager unnecessarily
++    G4iosSetDestination(silence.get());
+   }
+ 
+   // Get the world volume
+@@ -125,8 +123,7 @@ TrackingGeometry::TrackingGeometry(const std::string& name,
+     // we created the session and silenced G4
+     // undo that now incase others have use for G4
+     // nullptr => standard (ldmx_log(trace) and std::cerr)
+-    G4coutbuf.SetDestination(nullptr);
+-    G4cerrbuf.SetDestination(nullptr);
++    G4iosSetDestination(nullptr);
+   }
+ }
+ 
